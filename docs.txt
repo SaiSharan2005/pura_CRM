@@ -1,0 +1,113 @@
+Here's a textual design layout based on your ERD for the CRM system:
+
+---
+
+### **Tables and Attributes**
+
+#### 1. **Users**
+   - **id** (PK, INT): Unique identifier for the user.
+   - **username** (VARCHAR): Username of the user.
+   - **email** (VARCHAR): Email of the user.
+   - **password** (VARCHAR): Password of the user.
+
+#### 2. **Product**
+   - **id** (PK, INT): Unique identifier for the product.
+   - **productName** (VARCHAR): Name of the product.
+   - **description** (VARCHAR): Description of the product.
+   - **price** (DOUBLE): Price of the product.
+   - **sku** (VARCHAR): Stock Keeping Unit of the product.
+   - **createdDate** (DATE): Date when the product was created.
+   - **productStatus** (VARCHAR): Status of the product (e.g., available, out of stock).
+   - **duration** (INT): Duration (not specified in detail).
+   - **weight** (FLOAT): Weight of the product.
+   - **warrantyPeriod** (VARCHAR): Warranty period for the product.
+   - **dimensions** (VARCHAR): Dimensions of the product.
+   - **quantityAvailable** (INT): Available quantity of the product.
+
+#### 3. **Customer**
+   - **id** (PK, INT): Unique identifier for the customer.
+   - **customerName** (VARCHAR): Name of the customer.
+   - **email** (VARCHAR): Email of the customer.
+   - **phoneNumber** (INT): Phone number of the customer.
+   - **address** (VARCHAR): Address of the customer.
+   - **noOfOrders** (INT): Number of orders placed by the customer.
+
+#### 4. **Cart**
+   - **id** (PK, INT): Unique identifier for the cart.
+   - **userId** (FK, INT): Reference to the user who owns the cart.
+   - **createdAt** (DATETIME): Date and time the cart was created.
+
+#### 5. **CartItems**
+   - **id** (PK, INT): Unique identifier for the cart item.
+   - **productId** (FK, INT): Reference to the product.
+   - **cartId** (FK, INT): Reference to the cart.
+   - **quantity** (INT): Quantity of the product in the cart.
+   - **price** (DOUBLE): Price of the product in the cart.
+
+#### 6. **Deals**
+   - **id** (PK, INT): Unique identifier for the deal.
+   - **customerId** (FK, INT): Reference to the customer associated with the deal.
+   - **cartId** (FK, INT): Reference to the cart.
+   - **salesmanId** (FK, INT): Reference to the salesman handling the deal.
+   - **dealName** (VARCHAR): Name of the deal.
+   - **dealStage** (VARCHAR): Stage of the deal (e.g., in progress, completed).
+   - **description** (VARCHAR): Description of the deal.
+   - **amount** (DOUBLE): Total amount of the deal.
+   - **quantity** (INT): Quantity of products in the deal.
+   - **deliveryAddress** (VARCHAR): Delivery address for the deal.
+   - **expectedCloseDate** (DATE): Expected closure date for the deal.
+   - **actualCloseDate** (DATE): Actual closure date of the deal.
+   - **createdDate** (DATE): Date when the deal was created.
+   - **note** (VARCHAR): Additional notes about the deal.
+
+#### 7. **SalesmanDetails**
+   - **userId** (PK, INT): Unique identifier for the salesman (linked to Users table).
+   - **phoneNumber** (VARCHAR): Phone number of the salesman.
+   - **address** (VARCHAR): Address of the salesman.
+   - **dateOfBirth** (DATE): Date of birth of the salesman.
+   - **regionAssigned** (INT): Assigned region of the salesman.
+   - **totalSales** (INT): Total sales handled by the salesman.
+   - **hireDate** (DATE): Date the salesman was hired.
+   - **status** (VARCHAR): Employment status of the salesman.
+   - **notes** (VARCHAR): Additional notes about the salesman.
+
+#### 8. **ManagerDetails**
+   - **userId** (PK, INT): Unique identifier for the manager (linked to Users table).
+   - **phoneNumber** (VARCHAR): Phone number of the manager.
+   - **address** (VARCHAR): Address of the manager.
+   - **dateOfBirth** (DATE): Date of birth of the manager.
+   - **status** (VARCHAR): Employment status of the manager.
+   - **notes** (VARCHAR): Additional notes about the manager.
+   - **hireDate** (DATE): Date the manager was hired.
+
+#### 9. **LogisticsPersonDetails**
+   - **userId** (PK, INT): Unique identifier for the logistics person (linked to Users table).
+   - **phoneNumber** (VARCHAR): Phone number of the logistics person.
+   - **address** (VARCHAR): Address of the logistics person.
+   - **dateOfBirth** (DATE): Date of birth of the logistics person.
+   - **deliveryAreas** (VARCHAR): Areas assigned for delivery.
+   - **vehicleInfo** (VARCHAR): Information about the vehicle.
+   - **licenseNumber** (VARCHAR): License number of the logistics person.
+   - **status** (VARCHAR): Employment status.
+   - **notes** (VARCHAR): Additional notes about the logistics person.
+   - **hireDate** (DATE): Date the logistics person was hired.
+
+#### 10. **Delivery**
+   - **id** (PK, INT): Unique identifier for the delivery.
+   - **dealId** (FK, INT): Reference to the deal associated with the delivery.
+   - **logisticsPersonId** (FK, INT): Reference to the logistics person handling the delivery.
+   - **deliveryDate** (DATE): Date of the delivery.
+   - **status** (VARCHAR): Status of the delivery (e.g., in transit, delivered).
+   - **deliveryAddress** (VARCHAR): Address for the delivery.
+   - **vehicleInfo** (VARCHAR): Information about the vehicle used for delivery.
+   - **licenseNumber** (VARCHAR): License number associated with the delivery.
+
+#### 11. **Reminder**
+   - **id** (PK, INT): Unique identifier for the reminder.
+   - **senderId** (FK, INT): Reference to the user who set the reminder.
+   - **receiverId** (FK, INT): Reference to the user receiving the reminder.
+   - **message** (VARCHAR): Content of the reminder message.
+
+---
+
+This layout provides a structured view of the CRM system's entities, their attributes, and relationships. Each table supports a different aspect of customer relationship management, ensuring the system can handle user management, product cataloging, sales processes, order tracking, logistics, and reminders effectively.
