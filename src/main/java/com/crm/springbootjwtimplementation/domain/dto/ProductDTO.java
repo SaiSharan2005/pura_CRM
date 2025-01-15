@@ -33,8 +33,8 @@ public class ProductDTO {
     @NotBlank(message = "Product status is mandatory")
     private String productStatus;
 
-    @NotNull(message = "Duration is mandatory")
-    private Integer duration;
+    // @NotNull(message = "Duration is mandatory")
+    // private Integer duration;
 
     @NotNull(message = "Weight is mandatory")
     private Double weight;
