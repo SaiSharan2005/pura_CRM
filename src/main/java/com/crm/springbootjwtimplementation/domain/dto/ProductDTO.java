@@ -27,8 +27,8 @@ public class ProductDTO {
     @NotBlank(message = "SKU is mandatory")
     private String sku;
 
-    @NotNull(message = "Created date is mandatory")
-    private LocalDateTime createdDate;
+    // @NotNull(message = "Created date is mandatory")
+    // private LocalDateTime createdDate;
 
     @NotBlank(message = "Product status is mandatory")
     private String productStatus;
