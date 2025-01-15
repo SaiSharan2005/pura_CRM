@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 
 @Data
 public class ProductDTO {
+    // @NotBlank(message = "Product name is mandatory")
+    private Long id;
 
     @NotBlank(message = "Product name is mandatory")
     private String productName;
