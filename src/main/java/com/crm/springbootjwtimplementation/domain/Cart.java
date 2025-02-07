@@ -1,13 +1,10 @@
 package com.crm.springbootjwtimplementation.domain;
 
 import lombok.Data;
-
 import javax.persistence.*;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +35,6 @@ public class Cart {
     @Column(name = "status", nullable = false)
     private CartStatus status = CartStatus.ACTIVE;
     
-
     @Column
     private LocalDateTime updatedAt;
 
@@ -50,6 +46,14 @@ public class Cart {
     public void removeCartItem(CartItem item) {
         cartItems.remove(item);
         item.setCart(null);
+    }
+
+    @PrePersist
+    public void prePersist() {
+        // Set updatedAt to the current time if it hasn't been set.
+        if (this.updatedAt == null) {
+            this.updatedAt = LocalDateTime.now();
+        }
     }
 
     @PreUpdate

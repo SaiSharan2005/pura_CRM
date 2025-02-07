@@ -66,6 +66,4 @@ public class Product {
     @OneToMany(mappedBy = "product")
     @JsonIgnore // Ignore the cartItems field to prevent serialization of the reverse side
     private List<CartItem> cartItems;
-    
-
 }

@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -26,19 +27,21 @@ public class CartServiceImpl implements CartService {
 
     @Autowired
     private CartRepository cartRepository;
+    
     @Autowired
     private CartItemRepository cartItemRepository;
+    
     @Autowired
     private ProductRepository productRepository;
+    
     @Autowired
     private UserRepository userRepository;
-    
 
     @Override
     @Transactional
     public Cart createCart(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new RuntimeException("User not found"));
         Cart cart = new Cart();
         cart.setUser(user);
         cart.setStatus(CartStatus.ACTIVE);
@@ -46,19 +49,23 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public Cart getActiveCartForUser(Long userId) {
+    public List<Cart> getActiveCartsForUser(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        return cartRepository.findByUserAndStatus(user, CartStatus.ACTIVE)
-                .orElseThrow(() -> new RuntimeException("Active cart not found for user"));
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        List<Cart> activeCarts = cartRepository.findByUserAndStatus(user, CartStatus.ACTIVE);
+        if (activeCarts.isEmpty()) {
+            throw new RuntimeException("No active cart found for user");
+        }
+        return activeCarts;
     }
 
     @Override
     public List<CartDTO> getCartsByUserId(Long userId) {
         List<Cart> carts = cartRepository.findByUserId(userId);
-        return carts.stream().map(this::mapToCartDTO).collect(Collectors.toList());
+        return carts.stream()
+                .map(this::mapToCartDTO)
+                .collect(Collectors.toList());
     }
-
 
     @Override
     public List<CartDTO> getAllCarts() {
@@ -75,10 +82,9 @@ public class CartServiceImpl implements CartService {
                 cart.getCreatedAt(),
                 cart.getStatus().name(),
                 cart.getUpdatedAt(),
-                cart.getCartItems()
-                        .stream()
-                        .map(this::mapToCartItemDTO)
-                        .collect(Collectors.toList())
+                cart.getCartItems().stream()
+                    .map(this::mapToCartItemDTO)
+                    .collect(Collectors.toList())
         );
     }
 
@@ -93,18 +99,17 @@ public class CartServiceImpl implements CartService {
         );
     }
 
-
-
     @Override
     @Transactional
-    public Cart addItemToCart(Long userId, Long productId, int quantity) {
-        Cart cart = getActiveCartForUser(userId);
+    public Cart addItemToCart(Long cartId, Long productId, int quantity) {
+        Cart cart = cartRepository.findById(cartId)
+            .orElseThrow(() -> new RuntimeException("Cart not found"));
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+            .orElseThrow(() -> new RuntimeException("Product not found"));
 
         Optional<CartItem> existingCartItem = cart.getCartItems().stream()
-                .filter(item -> item.getProduct().equals(product))
-                .findFirst();
+            .filter(item -> item.getProduct().equals(product))
+            .findFirst();
 
         if (existingCartItem.isPresent()) {
             CartItem cartItem = existingCartItem.get();
@@ -120,47 +125,66 @@ public class CartServiceImpl implements CartService {
             cartItem.calculateTotalPrice();
             cartItemRepository.save(cartItem);
         }
-
         return cart;
     }
 
     @Override
     @Transactional
     public Cart removeItemFromCart(Long userId, Long cartItemId) {
-        Cart cart = getActiveCartForUser(userId);
-        CartItem cartItem = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new RuntimeException("Cart item not found"));
-
-        if (!cartItem.getCart().equals(cart)) {
-            throw new RuntimeException("Cart item does not belong to the user's cart");
-        }
-        cartItemRepository.delete(cartItem);
+        List<Cart> activeCarts = getActiveCartsForUser(userId);
+        Cart cart = activeCarts.stream()
+            .filter(c -> c.getCartItems().stream().anyMatch(item -> item.getId().equals(cartItemId)))
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("Cart item does not belong to any active cart"));
+        
+        CartItem cartItem = cart.getCartItems().stream()
+            .filter(item -> item.getId().equals(cartItemId))
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("Cart item not found"));
+        
+        cart.removeCartItem(cartItem);
         return cart;
     }
 
     @Override
     @Transactional
     public Cart updateCartItem(Long userId, Long cartItemId, int quantity) {
-        Cart cart = getActiveCartForUser(userId);
-        CartItem cartItem = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+        List<Cart> activeCarts = getActiveCartsForUser(userId);
+        Cart matchingCart = activeCarts.stream()
+            .filter(cart -> cart.getCartItems().stream()
+                .anyMatch(item -> item.getId().equals(cartItemId)))
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("Cart item does not belong to any active cart"));
 
-        if (!cartItem.getCart().equals(cart)) {
-            throw new RuntimeException("Cart item does not belong to the user's cart");
-        }
+        CartItem cartItem = matchingCart.getCartItems().stream()
+            .filter(item -> item.getId().equals(cartItemId))
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("Cart item not found"));
+    
         cartItem.setQuantity(quantity);
         cartItem.calculateTotalPrice();
         cartItemRepository.save(cartItem);
-        return cart;
+    
+        return matchingCart;
     }
+    
     @Override
     public List<CartItem> getCartItems(Long userId) {
-        Cart cart = getActiveCartForUser(userId);
-        // Force initialization
-        cart.getCartItems().size();
-        return cart.getCartItems();
+        List<Cart> activeCarts = getActiveCartsForUser(userId);
+        List<CartItem> allItems = new ArrayList<>();
+        activeCarts.forEach(cart -> {
+            cart.getCartItems().size();
+            allItems.addAll(cart.getCartItems());
+        });
+        return allItems;
     }
     
-    
-    
+    // New method to delete a cart by cartId
+    @Override
+    @Transactional
+    public void deleteCart(Long cartId) {
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> new RuntimeException("Cart not found"));
+        cartRepository.delete(cart);
+    }
 }
