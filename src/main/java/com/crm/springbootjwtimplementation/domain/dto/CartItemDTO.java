@@ -7,13 +7,14 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 
+import com.crm.springbootjwtimplementation.domain.Product;
+
 @Getter
 @Setter
 @AllArgsConstructor
 public class CartItemDTO {
     private Long id;
-    private Long productId;
-    private String productName;
+    private Product product;
     private Integer quantity;
     private BigDecimal price;
     private BigDecimal totalPrice;

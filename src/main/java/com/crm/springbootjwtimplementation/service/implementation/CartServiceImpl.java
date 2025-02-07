@@ -91,8 +91,7 @@ public class CartServiceImpl implements CartService {
     private CartItemDTO mapToCartItemDTO(CartItem cartItem) {
         return new CartItemDTO(
                 cartItem.getId(),
-                cartItem.getProduct().getId(),
-                cartItem.getProduct().getProductName(),
+                cartItem.getProduct(),
                 cartItem.getQuantity(),
                 cartItem.getPrice(),
                 cartItem.getTotalPrice()

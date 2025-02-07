@@ -13,11 +13,15 @@ import java.time.LocalDate;
 
 @Data
 public class DealDetailsDTO {
+
+    @NotNull(message = "Deal ID cannot be null")
+    private Long id;
+
     @NotNull(message = "Customer ID cannot be null")
     private Customer customerId;
 
     @NotNull(message = "Cart ID cannot be null")
-    private Cart cartId;
+    private CartDTO cartId;
 
     @NotNull(message = "User ID cannot be null")
     private User userId;
