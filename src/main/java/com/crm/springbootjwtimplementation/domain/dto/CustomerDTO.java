@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
 
 @Data
 public class CustomerDTO {
-
+    private Long id;
     @NotBlank(message = "Customer name is mandatory")
     private String customerName;
 
