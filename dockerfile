@@ -17,7 +17,7 @@ WORKDIR /app
 COPY --from=build /app/target/spring-boot-jwt-implementation-0.0.1-SNAPSHOT.jar ./app.jar
 
 # Expose the port the app ruon
-EXPOSE 8005
+EXPOSE 8000
 
 # Set environment variables for database and JWT configuration
 # ENV SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/pura_CRM
