@@ -1,5 +1,6 @@
 package com.crm.springbootjwtimplementation.domain.dto;
 
+import com.crm.springbootjwtimplementation.domain.dto.InventoryDTO;
 
 import lombok.Data;
 import java.math.BigDecimal;
@@ -22,4 +23,6 @@ public class ProductVariantDTO {
     private LocalDateTime updatedDate;
     private Long productId;
     private List<String> imageUrls; // or a list of DTOs for more details
+    private List<InventoryDTO> inventories;
+
 }
