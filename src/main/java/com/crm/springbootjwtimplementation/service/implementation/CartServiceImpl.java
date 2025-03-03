@@ -3,16 +3,16 @@ package com.crm.springbootjwtimplementation.service.implementation;
 import com.crm.springbootjwtimplementation.domain.Cart;
 import com.crm.springbootjwtimplementation.domain.CartItem;
 import com.crm.springbootjwtimplementation.domain.CartStatus;
-import com.crm.springbootjwtimplementation.domain.Product;
+import com.crm.springbootjwtimplementation.domain.ProductVariant;
 import com.crm.springbootjwtimplementation.domain.User;
 import com.crm.springbootjwtimplementation.domain.dto.CartDTO;
 import com.crm.springbootjwtimplementation.domain.dto.CartItemDTO;
 import com.crm.springbootjwtimplementation.repository.CartItemRepository;
 import com.crm.springbootjwtimplementation.repository.CartRepository;
 import com.crm.springbootjwtimplementation.repository.ProductRepository;
+import com.crm.springbootjwtimplementation.repository.ProductVariantRepository;
 import com.crm.springbootjwtimplementation.repository.UserRepository;
 import com.crm.springbootjwtimplementation.service.CartService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,9 +31,14 @@ public class CartServiceImpl implements CartService {
     @Autowired
     private CartItemRepository cartItemRepository;
     
+    // Still available if needed for extra product info.
     @Autowired
     private ProductRepository productRepository;
     
+    // New repository for product variants.
+    @Autowired
+    private ProductVariantRepository productVariantRepository;
+
     @Autowired
     private UserRepository userRepository;
 
@@ -88,26 +93,29 @@ public class CartServiceImpl implements CartService {
         );
     }
 
+    // Updated to map the product variant.
     private CartItemDTO mapToCartItemDTO(CartItem cartItem) {
         return new CartItemDTO(
                 cartItem.getId(),
-                cartItem.getProduct(),
+                cartItem.getProductVariant(), // Updated field from product to productVariant
                 cartItem.getQuantity(),
                 cartItem.getPrice(),
                 cartItem.getTotalPrice()
         );
     }
 
+    // Changed parameter name from productId to variantId.
     @Override
     @Transactional
-    public Cart addItemToCart(Long cartId, Long productId, int quantity) {
+    public Cart addItemToCart(Long cartId, Long variantId, int quantity) {
         Cart cart = cartRepository.findById(cartId)
             .orElseThrow(() -> new RuntimeException("Cart not found"));
-        Product product = productRepository.findById(productId)
-            .orElseThrow(() -> new RuntimeException("Product not found"));
+        ProductVariant productVariant = productVariantRepository.findById(variantId)
+            .orElseThrow(() -> new RuntimeException("Product variant not found"));
 
+        // Check if the cart already contains this product variant.
         Optional<CartItem> existingCartItem = cart.getCartItems().stream()
-            .filter(item -> item.getProduct().equals(product))
+            .filter(item -> item.getProductVariant().equals(productVariant))
             .findFirst();
 
         if (existingCartItem.isPresent()) {
@@ -118,9 +126,9 @@ public class CartServiceImpl implements CartService {
         } else {
             CartItem cartItem = new CartItem();
             cartItem.setCart(cart);
-            cartItem.setProduct(product);
+            cartItem.setProductVariant(productVariant);
             cartItem.setQuantity(quantity);
-            cartItem.setPrice(product.getPrice());
+            cartItem.setPrice(productVariant.getPrice());
             cartItem.calculateTotalPrice();
             cartItemRepository.save(cartItem);
         }
@@ -172,13 +180,13 @@ public class CartServiceImpl implements CartService {
         List<Cart> activeCarts = getActiveCartsForUser(userId);
         List<CartItem> allItems = new ArrayList<>();
         activeCarts.forEach(cart -> {
+            // Force loading of items (if lazy)
             cart.getCartItems().size();
             allItems.addAll(cart.getCartItems());
         });
         return allItems;
     }
     
-    // New method to delete a cart by cartId
     @Override
     @Transactional
     public void deleteCart(Long cartId) {

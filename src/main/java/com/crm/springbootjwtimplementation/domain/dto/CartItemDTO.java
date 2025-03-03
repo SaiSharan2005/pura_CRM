@@ -1,21 +1,20 @@
 package com.crm.springbootjwtimplementation.domain.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.NoArgsConstructor;  // ✅ Add this
 
 import java.math.BigDecimal;
-import com.crm.springbootjwtimplementation.domain.Product;
+import com.crm.springbootjwtimplementation.domain.ProductVariant;
 
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor  // ✅ Fix: Add a no-arg constructor
+@NoArgsConstructor
 public class CartItemDTO {
     private Long id;
-    private Product product;
+    private ProductVariant productVariant;
     private Integer quantity;
     private BigDecimal price;
     private BigDecimal totalPrice;

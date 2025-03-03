@@ -1,7 +1,6 @@
 package com.crm.springbootjwtimplementation.service;
 
 import com.crm.springbootjwtimplementation.domain.CartItem;
-
 import java.util.List;
 
 public interface CartItemService {

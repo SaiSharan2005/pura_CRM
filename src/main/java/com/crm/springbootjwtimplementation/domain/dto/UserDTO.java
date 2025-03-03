@@ -12,6 +12,7 @@ public class UserDTO {
 
     private String username;
     private String email;
+    private String imageUrl;
     private Set<String> roles;
 
     public UserDTO() {
@@ -22,6 +23,7 @@ public class UserDTO {
         this.id = user.getId();
         this.username = user.getUsername();
         this.email = user.getEmail();
+        this.imageUrl = user.getImageUrl();
         this.roles = user.getRoles().stream()
                          .map(Role::getName) // Assuming Role has a `getName` method
                          .collect(Collectors.toSet());
@@ -49,6 +51,14 @@ public class UserDTO {
 
     public void setEmail(String email) {
         this.email = email;
+    }    
+    
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public Set<String> getRoles() {

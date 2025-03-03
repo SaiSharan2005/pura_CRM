@@ -29,11 +29,12 @@ public class CartController {
         return ResponseEntity.ok(cart);
     }
 
+    // Note: CartRequest now should include a 'variantId' field.
     @PostMapping("/add")
     public ResponseEntity<Cart> addItemToCart(@RequestBody CartRequest cartRequest) {
         Cart cart = cartService.addItemToCart(
             cartRequest.getCartId(), 
-            cartRequest.getProductId(),
+            cartRequest.getVariantId(),  // Updated to pass variantId
             cartRequest.getQuantity());
         return ResponseEntity.ok(cart);
     }

@@ -10,7 +10,8 @@ public interface CartService {
     List<Cart> getActiveCartsForUser(Long userId);
     List<CartDTO> getAllCarts();
     List<CartDTO> getCartsByUserId(Long userId);
-    Cart addItemToCart(Long cartId, Long productId, int quantity);
+    // Changed parameter from productId to variantId.
+    Cart addItemToCart(Long cartId, Long variantId, int quantity);
     Cart removeItemFromCart(Long userId, Long cartItemId);
     Cart updateCartItem(Long userId, Long cartItemId, int quantity);
     List<CartItem> getCartItems(Long userId);

@@ -1,5 +1,7 @@
 package com.crm.springbootjwtimplementation.service.implementation;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.crm.springbootjwtimplementation.domain.Role;
 import com.crm.springbootjwtimplementation.domain.User;
 import com.crm.springbootjwtimplementation.domain.dto.TokenResponseDTO;
@@ -25,8 +27,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -46,7 +51,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private AuthenticationManager authenticationManager;
-
+    @Autowired
+    private Cloudinary cloudinary;
+ 
     @Override
     public AccessToken register(UserRegisterDto userRegisterDto) {
         checkUserExistsWithUserName(userRegisterDto.getUsername());
@@ -131,4 +138,18 @@ public class AuthServiceImpl implements AuthService {
         return userRoles;
     }
 
+        @Override
+    public UserDTO updateProfilePicture(Long userId, MultipartFile file) {
+        User user = userRepository.findById(userId)
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+        try {
+            Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
+            String imageUrl = (String) uploadResult.get("secure_url");
+            user.setImageUrl(imageUrl);
+            userRepository.save(user);
+        } catch (IOException e) {
+            throw new RuntimeException("Image upload failed");
+        }
+        return new UserDTO(user);
+    }
 }

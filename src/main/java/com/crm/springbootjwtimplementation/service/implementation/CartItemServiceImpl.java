@@ -21,8 +21,8 @@ public class CartItemServiceImpl implements CartItemService {
 
     @Override
     public CartItem updateCartItem(Long id, CartItem cartItem) {
-        CartItem existingCartItem = cartItemRepository.findById(id).orElseThrow(() -> 
-            new RuntimeException("CartItem not found with ID: " + id));
+        CartItem existingCartItem = cartItemRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("CartItem not found with ID: " + id));
         existingCartItem.setQuantity(cartItem.getQuantity());
         existingCartItem.setPrice(cartItem.getPrice());
         return cartItemRepository.save(existingCartItem);
@@ -30,8 +30,8 @@ public class CartItemServiceImpl implements CartItemService {
 
     @Override
     public CartItem getCartItemById(Long id) {
-        return cartItemRepository.findById(id).orElseThrow(() -> 
-            new RuntimeException("CartItem not found with ID: " + id));
+        return cartItemRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("CartItem not found with ID: " + id));
     }
 
     @Override

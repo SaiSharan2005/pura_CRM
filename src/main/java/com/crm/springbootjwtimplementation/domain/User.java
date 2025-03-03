@@ -40,6 +40,9 @@ public class User {
         @Column(name = "password")
         private String password;
 
+        @Column(name = "image_url")
+        private String imageUrl;
+    
         @ManyToMany(fetch = FetchType.EAGER)
         @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
         @JsonIgnore
