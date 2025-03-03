@@ -4,6 +4,7 @@ import lombok.Data;
 import javax.persistence.*;
 import javax.validation.constraints.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.crm.springbootjwtimplementation.domain.DealStage;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -16,18 +17,18 @@ public class DealDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Use a more descriptive field name for the associated customer.
+    // Associated customer
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
-    // Use "cart" instead of "cartId" since it represents an entity.
+    // Associated cart (ignored in JSON)
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "cart_id", nullable = false)
     private Cart cart;
 
-    // Renamed for clarity.
+    // Associated user (ignored in JSON)
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -37,9 +38,10 @@ public class DealDetails {
     @Column(nullable = false)
     private String dealName;
 
-    @NotBlank(message = "Deal stage is mandatory")
+    @NotNull(message = "Deal stage is mandatory")
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String dealStage;
+    private DealStage dealStage;
 
     @NotNull(message = "Amount is mandatory")
     @DecimalMin(value = "0.0", inclusive = false, message = "Amount must be greater than 0")
@@ -62,7 +64,7 @@ public class DealDetails {
 
     private String note;
 
-    // Optional: If you need to view all deliveries related to this deal, add a bidirectional mapping.
+    // If needed, a bidirectional mapping to deliveries
     @OneToMany(mappedBy = "deal", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Delivery> deliveries;
 }
