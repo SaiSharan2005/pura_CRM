@@ -10,7 +10,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Stage 2: Create a lightweight runtime image
-FROM openjdk:17.0.1-jdk-slim
+FROM openjdk:17-alpine
 WORKDIR /app
 
 # Copy the JAR file from the build stage
