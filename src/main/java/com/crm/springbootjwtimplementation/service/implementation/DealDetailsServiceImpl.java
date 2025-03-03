@@ -87,7 +87,7 @@ public class DealDetailsServiceImpl implements DealDetailsService {
     @Override
     public List<DealDetailsDTO> getDealsOfUser(Long userId) {
         // Use JPA query naming convention to find by the user’s id.
-        List<DealDetails> deals = dealDetailsRepository.findByUserIdId(userId);
+        List<DealDetails> deals = dealDetailsRepository.findByUser_Id(userId);
         if (deals.isEmpty()) {
             throw new CustomSecurityException(ApiMessages.USER_HAS_NO_DEALS + userId, HttpStatus.NOT_FOUND);
         }
