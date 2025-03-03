@@ -1,10 +1,8 @@
-// Deal Service Implementation
 package com.crm.springbootjwtimplementation.service.implementation;
 
 import com.crm.springbootjwtimplementation.domain.Cart;
 import com.crm.springbootjwtimplementation.domain.Customer;
 import com.crm.springbootjwtimplementation.domain.DealDetails;
-import com.crm.springbootjwtimplementation.domain.SalesmanDetails;
 import com.crm.springbootjwtimplementation.domain.User;
 import com.crm.springbootjwtimplementation.domain.dto.DealDetailsDTO;
 import com.crm.springbootjwtimplementation.domain.dto.DealRequest;
@@ -12,7 +10,6 @@ import com.crm.springbootjwtimplementation.exceptions.security.CustomSecurityExc
 import com.crm.springbootjwtimplementation.repository.CartRepository;
 import com.crm.springbootjwtimplementation.repository.CustomerRepository;
 import com.crm.springbootjwtimplementation.repository.DealDetailsRepository;
-import com.crm.springbootjwtimplementation.repository.SalesmanDetailsRepository;
 import com.crm.springbootjwtimplementation.repository.UserRepository;
 import com.crm.springbootjwtimplementation.service.DealDetailsService;
 import com.crm.springbootjwtimplementation.util.Constants.ApiMessages;
@@ -44,36 +41,33 @@ public class DealDetailsServiceImpl implements DealDetailsService {
     private ModelMapper modelMapper;
 
     @Override
-    public DealDetailsDTO createDeal(DealRequest dealDetailsReq) {
-        // Check if dealDetailsReq is not null
-        if (Objects.isNull(dealDetailsReq)) {
+    public DealDetailsDTO createDeal(DealRequest dealRequest) {
+        if (Objects.isNull(dealRequest)) {
             throw new CustomSecurityException(ApiMessages.INVALID_INPUT_DATA, HttpStatus.BAD_REQUEST);
         }
 
-        // Fetch customer, cart, and salesman, throw exception if not found
-        Customer customer = customerRepository.findById(dealDetailsReq.getCustomerId())
+        // Fetch customer, cart, and salesman (user) - throw exception if not found
+        Customer customer = customerRepository.findById(dealRequest.getCustomerId())
                 .orElseThrow(() -> new CustomSecurityException(
-                        "Customer not found with ID: " + dealDetailsReq.getCustomerId(), HttpStatus.NOT_FOUND));
+                        "Customer not found with ID: " + dealRequest.getCustomerId(), HttpStatus.NOT_FOUND));
 
-        Cart cart = cartRepository.findById(dealDetailsReq.getCartId())
+        Cart cart = cartRepository.findById(dealRequest.getCartId())
                 .orElseThrow(() -> new CustomSecurityException(
-                        "Cart not found with ID: " + dealDetailsReq.getCartId(), HttpStatus.NOT_FOUND));
+                        "Cart not found with ID: " + dealRequest.getCartId(), HttpStatus.NOT_FOUND));
 
-        User salesman = userRepository.findById(dealDetailsReq.getUserId())
+        User salesman = userRepository.findById(dealRequest.getUserId())
                 .orElseThrow(() -> new CustomSecurityException(
-                        "User not found with ID: " + dealDetailsReq.getUserId(), HttpStatus.NOT_FOUND));
+                        "User not found with ID: " + dealRequest.getUserId(), HttpStatus.NOT_FOUND));
 
-        // Map DealRequest to DealDetails entity and associate with fetched entities
-        DealDetails dealDetails = modelMapper.map(dealDetailsReq, DealDetails.class);
-        dealDetails.setCustomerId(customer);
-        dealDetails.setCartId(cart);
-        dealDetails.setUserId(salesman);
+        // Map DealRequest to DealDetails and associate the fetched entities.
+        DealDetails dealDetails = modelMapper.map(dealRequest, DealDetails.class);
+        dealDetails.setCustomer(customer);
+        dealDetails.setCart(cart);
+        dealDetails.setUser(salesman);
 
-        // Save the deal details and map to DTO
-        dealDetails = dealDetailsRepository.save(dealDetails);
-        // System.out.println(dealDetails);
-        return modelMapper.map(dealDetails, DealDetailsDTO.class);
-        // return dealDetails;
+        // Save and return the saved deal as DTO.
+        DealDetails savedDeal = dealDetailsRepository.save(dealDetails);
+        return modelMapper.map(savedDeal, DealDetailsDTO.class);
     }
 
     @Override
@@ -86,55 +80,46 @@ public class DealDetailsServiceImpl implements DealDetailsService {
     @Override
     public DealDetailsDTO getDealById(Long id) {
         DealDetails dealDetails = dealDetailsRepository.findById(id)
-                .orElseThrow(
-                        () -> new CustomSecurityException(ApiMessages.MANAGER_NOT_FOUND + id, HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CustomSecurityException(ApiMessages.DEAL_NOT_FOUND + id, HttpStatus.NOT_FOUND));
         return modelMapper.map(dealDetails, DealDetailsDTO.class);
     }
+
     @Override
-    public List<DealDetailsDTO> getDealsOfUser(Long id) {
-        List<DealDetails> dealDetails = dealDetailsRepository.findByUserIdId(id);
-        if (dealDetails.isEmpty()) {
-            throw new CustomSecurityException(ApiMessages.USER_HAS_NO_DEALS + id, HttpStatus.NOT_FOUND);
+    public List<DealDetailsDTO> getDealsOfUser(Long userId) {
+        // Use JPA query naming convention to find by the user’s id.
+        List<DealDetails> deals = dealDetailsRepository.findByUserIdId(userId);
+        if (deals.isEmpty()) {
+            throw new CustomSecurityException(ApiMessages.USER_HAS_NO_DEALS + userId, HttpStatus.NOT_FOUND);
         }
-        return dealDetails.stream()
+        return deals.stream()
                 .map(deal -> modelMapper.map(deal, DealDetailsDTO.class))
                 .collect(Collectors.toList());
     }
-    
-    
-    
+
     @Override
-    public DealDetailsDTO updateDealById(Long id, DealRequest dealDetailsDTO) {
-        if (Objects.isNull(dealDetailsDTO)) {
+    public DealDetailsDTO updateDealById(Long id, DealRequest dealRequest) {
+        if (Objects.isNull(dealRequest)) {
             throw new CustomSecurityException(ApiMessages.INVALID_INPUT_DATA, HttpStatus.BAD_REQUEST);
         }
 
-        // Fetch the existing deal from the database
         DealDetails existingDeal = dealDetailsRepository.findById(id)
-                .orElseThrow(() -> new CustomSecurityException(
-                        ApiMessages.DEAL_NOT_FOUND + id, HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CustomSecurityException(ApiMessages.DEAL_NOT_FOUND + id, HttpStatus.NOT_FOUND));
 
-        // Map the fields from the request to the existing entity, excluding the `id`
-        // field
+        // Configure the mapping to skip the id field if not intended to be updated.
         modelMapper.typeMap(DealRequest.class, DealDetails.class).addMappings(mapper -> {
-            mapper.skip(DealDetails::setId); // Ensure the `id` field is not mapped
+            mapper.skip(DealDetails::setId);
         });
+        modelMapper.map(dealRequest, existingDeal);
 
-        modelMapper.map(dealDetailsDTO, existingDeal);
-
-        // Save the updated entity
         DealDetails updatedDeal = dealDetailsRepository.save(existingDeal);
-
-        // Convert the updated entity to DTO and return
         return modelMapper.map(updatedDeal, DealDetailsDTO.class);
     }
 
     @Override
     public void deleteDealById(Long id) {
         if (!dealDetailsRepository.existsById(id)) {
-            throw new CustomSecurityException(ApiMessages.MANAGER_NOT_FOUND + id, HttpStatus.NOT_FOUND);
+            throw new CustomSecurityException(ApiMessages.DEAL_NOT_FOUND + id, HttpStatus.NOT_FOUND);
         }
-
         dealDetailsRepository.deleteById(id);
     }
 }

@@ -1,49 +1,37 @@
-// Deal Entity
 package com.crm.springbootjwtimplementation.domain;
 
 import lombok.Data;
-
 import javax.persistence.*;
 import javax.validation.constraints.*;
-
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @Entity
-@Table(name = "dealDetails")
+@Table(name = "deal_details")
 public class DealDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Use a more descriptive field name for the associated customer.
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "customer_id", nullable = false)
-    private Customer customerId;
+    private Customer customer;
 
+    // Use "cart" instead of "cartId" since it represents an entity.
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "cart_id", nullable = false)
-    private Cart cartId;
-    
+    private Cart cart;
+
+    // Renamed for clarity.
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")  // This column should exist in the table
-    private User userId;
-
-    // @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    // @JoinColumn(name = "cart_id", nullable = false)
-    // @JsonIgnore
-    // private Cart cartId;
-
-    // @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    // @JoinColumn(name = "salesman_id", nullable = false)
-    // @JsonIgnore
-    // private SalesmanDetails salesmanId;
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @NotBlank(message = "Deal name is mandatory")
     @Column(nullable = false)
@@ -73,4 +61,8 @@ public class DealDetails {
     private LocalDate actualClosedDate;
 
     private String note;
+
+    // Optional: If you need to view all deliveries related to this deal, add a bidirectional mapping.
+    @OneToMany(mappedBy = "deal", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Delivery> deliveries;
 }
