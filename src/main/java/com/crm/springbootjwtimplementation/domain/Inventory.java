@@ -17,7 +17,7 @@ public class Inventory {
     // Each inventory record links a product variant with a warehouse.
     @NotNull(message = "Product variant is required")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_variant_id", nullable = false)
+    @JoinColumn(name = "product_variant_id", nullable = true)
     private ProductVariant productVariant;
 
     @NotNull(message = "Warehouse is required")
