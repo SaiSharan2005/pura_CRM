@@ -7,6 +7,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 
 @Data
 @Entity
@@ -40,7 +42,7 @@ public class ProductVariant {
 
     @Column
     private LocalDateTime updatedDate;
-
+    @JsonIgnore   // This tells Jackson to ignore the product field when serializing.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;

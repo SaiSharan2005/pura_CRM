@@ -3,6 +3,10 @@ package com.crm.springbootjwtimplementation.domain;
 import lombok.Data;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.math.BigDecimal;
 
 @Data
@@ -14,14 +18,15 @@ public class CartItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Reference to the cart remains unchanged.
+    @JsonBackReference
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "cart_id", nullable = false)
     private Cart cart;
 
     // Now referencing a specific product variant.
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "variant_id", nullable = false)
+    @JsonIgnoreProperties({ "variants", "hibernateLazyInitializer", "handler" })
     private ProductVariant productVariant;
 
     @NotNull
