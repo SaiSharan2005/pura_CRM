@@ -1,14 +1,15 @@
 package com.crm.springbootjwtimplementation.repository;
 
-import com.crm.springbootjwtimplementation.domain.Target;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
 
-@Repository
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.crm.springbootjwtimplementation.domain.Target;
+
 public interface TargetRepository extends JpaRepository<Target, Long> {
-    List<Target> findByAssignedToId(Long assignedToId); // Find targets by assignee
-    List<Target> findByAssignedById(Long assignedById); // Find targets by assigner
-    List<Target> findByAssignedToIdId(Long assignedToId);
+    // Return all targets for a given monthYear
+    List<Target> findByMonthYear(String monthYear);
+    
+    // Return all targets for a given salesman (using salesman id)
+    List<Target> findBySalesmanId(Long salesmanId);
 }

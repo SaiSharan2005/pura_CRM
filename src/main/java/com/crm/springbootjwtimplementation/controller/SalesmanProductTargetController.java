@@ -13,78 +13,77 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.crm.springbootjwtimplementation.domain.dto.ResponseMessageDTO;
-import com.crm.springbootjwtimplementation.domain.dto.TargetRequestDTO;
-import com.crm.springbootjwtimplementation.domain.dto.TargetResponseDTO;
+import com.crm.springbootjwtimplementation.domain.dto.SalesmanProductTargetRequestDTO;
+import com.crm.springbootjwtimplementation.domain.dto.SalesmanProductTargetResponseDTO;
 import com.crm.springbootjwtimplementation.domain.dto.TokenResponseDTO;
 import com.crm.springbootjwtimplementation.service.AuthService;
-import com.crm.springbootjwtimplementation.service.TargetService;
+import com.crm.springbootjwtimplementation.service.SalesmanProductTargetService;
 
 @RestController
-@RequestMapping("/api/monthly_target")
-public class TargetController {
+@RequestMapping("/api/salesman_product_target")
+public class SalesmanProductTargetController {
 
     @Autowired
-    private TargetService targetService;
+    private SalesmanProductTargetService targetService;
     
     @Autowired
-    private AuthService authService; // Assumed service to get authenticated user details
+    private AuthService authService; // Provides the authenticated user info
 
     // 1. Create a target
     @PostMapping("/create")
-    public ResponseMessageDTO createTarget(@RequestBody TargetRequestDTO requestDTO) {
+    public ResponseMessageDTO createTarget(@RequestBody SalesmanProductTargetRequestDTO requestDTO) {
         TokenResponseDTO userToken = authService.getAuthenticatedUser();
-        Long managerUserId = userToken.getId();
-        targetService.createTarget(requestDTO, managerUserId);
+        Long salesmanUserId = userToken.getId();
+        targetService.createSalesmanProductTarget(requestDTO, salesmanUserId);
         ResponseMessageDTO response = new ResponseMessageDTO();
-        response.setMsg("Target created successfully");
+        response.setMsg("Salesman product target created successfully");
         response.setSuccess(true);
         return response;
     }
 
     // 2. Get all targets
     @GetMapping("/all")
-    public List<TargetResponseDTO> getAllTargets() {
-        return targetService.getAllTargets();
+    public List<SalesmanProductTargetResponseDTO> getAllTargets() {
+        return targetService.getAllSalesmanProductTargets();
     }
 
-    // 3. Get targets by month
+    // 3. Get targets by month (e.g., /month/2025-03)
     @GetMapping("/month/{monthYear}")
-    public List<TargetResponseDTO> getTargetsByMonth(@PathVariable String monthYear) {
+    public List<SalesmanProductTargetResponseDTO> getTargetsByMonth(@PathVariable String monthYear) {
         return targetService.getTargetsByMonth(monthYear);
     }
 
-    // 4. Get current month targets for the salesman
+    // 4. Get current month targets for the authenticated salesman
     @GetMapping("/currentMonth")
-    public List<TargetResponseDTO> getCurrentMonthTargetsForSalesman() {
+    public List<SalesmanProductTargetResponseDTO> getCurrentMonthTargets() {
         TokenResponseDTO userToken = authService.getAuthenticatedUser();
-        // Assuming the authenticated user is a salesman and we can retrieve his SalesmanDetails id via userToken
         Long salesmanUserId = userToken.getId();
         return targetService.getCurrentMonthTargetsForSalesman(salesmanUserId);
     }
 
-    // 5. Update target by id
+    // 5. Update a target by id
     @PutMapping("/update/{id}")
-    public ResponseMessageDTO updateTarget(@PathVariable Long id, @RequestBody TargetRequestDTO requestDTO) {
+    public ResponseMessageDTO updateTarget(@PathVariable Long id, @RequestBody SalesmanProductTargetRequestDTO requestDTO) {
         TokenResponseDTO userToken = authService.getAuthenticatedUser();
-        Long managerUserId = userToken.getId();
-        targetService.updateTarget(id, requestDTO, managerUserId);
+        Long salesmanUserId = userToken.getId();
+        targetService.updateSalesmanProductTarget(id, requestDTO, salesmanUserId);
         ResponseMessageDTO response = new ResponseMessageDTO();
-        response.setMsg("Target updated successfully");
+        response.setMsg("Salesman product target updated successfully");
         response.setSuccess(true);
         return response;
     }
 
-    // 6. Delete target by id
+    // 6. Delete a target by id
     @DeleteMapping("/delete/{id}")
     public ResponseMessageDTO deleteTarget(@PathVariable Long id) {
         TokenResponseDTO userToken = authService.getAuthenticatedUser();
-        Long managerUserId = userToken.getId();
-        targetService.deleteTarget(id, managerUserId);
+        Long salesmanUserId = userToken.getId();
+        targetService.deleteSalesmanProductTarget(id, salesmanUserId);
         ResponseMessageDTO response = new ResponseMessageDTO();
-        response.setMsg("Target deleted successfully");
+        response.setMsg("Salesman product target deleted successfully");
         response.setSuccess(true);
         return response;
     }
     
-    // (Optional) Additional routes can be added as needed.
+    // Additional routes (if needed) can be added here.
 }

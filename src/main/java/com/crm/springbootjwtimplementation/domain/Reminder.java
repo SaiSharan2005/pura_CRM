@@ -1,7 +1,5 @@
 package com.crm.springbootjwtimplementation.domain;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import javax.persistence.Column;
@@ -20,47 +18,41 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "targets")
-public class Target {
+@Table(name = "reminders")
+public class Reminder {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Target description
+    // Mandatory title
     @Column(nullable = false)
-    private String description;
+    private String title;
 
-    // Deadline for the target
+    // Note (can be long text)
+    @Column(columnDefinition = "TEXT")
+    private String note;
+
+    // Location (optional)
+    private String location;
+
+    // Optional associated deal
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "deal_id")
+    private DealDetails deal;
+
+    // The user who created the reminder; required.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    // Active flag
     @Column(nullable = false)
-    private LocalDate deadline;
+    private boolean isActive = true;
 
-    // Whether the target has been achieved
-    @Column(name = "is_achieved", nullable = false)
-    private boolean isAchieved = false;
-
-    // Monthly outlet count target
-    @Column(name = "monthly_outlet_count", nullable = false)
-    private int monthlyOutletCount;
-
-    // Monthly revenue or sales amount target
-    @Column(name = "monthly_target_amount", nullable = false)
-    private BigDecimal monthlyTargetAmount;
-
-    // The manager who created the target.
-    // Taken from the authenticated user.
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "manager_id", nullable = false)
-    private ManagerDetails manager;
-
-    // The salesman for whom this target is set.
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "salesman_id", nullable = false)
-    private SalesmanDetails salesman;
-
-    // The month-year identifier (e.g., "2025-03")
-    @Column(name = "month_year", nullable = false)
-    private String monthYear;
+    // The datetime at which the reminder is scheduled
+    @Column(name = "reminder_date", nullable = false)
+    private LocalDateTime reminderDate;
 
     // Audit fields
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -68,7 +60,7 @@ public class Target {
     
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
+    
     @PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();

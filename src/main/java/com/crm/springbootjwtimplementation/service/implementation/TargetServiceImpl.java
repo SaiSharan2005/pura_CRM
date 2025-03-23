@@ -1,123 +1,139 @@
 package com.crm.springbootjwtimplementation.service.implementation;
 
-import com.crm.springbootjwtimplementation.domain.Target;
-import com.crm.springbootjwtimplementation.domain.User;
-import com.crm.springbootjwtimplementation.domain.dto.TargetRequestDTO;
-import com.crm.springbootjwtimplementation.domain.dto.TargetResponseDTO;
-import com.crm.springbootjwtimplementation.repository.TargetRepository;
-import com.crm.springbootjwtimplementation.repository.UserRepository;
-import com.crm.springbootjwtimplementation.service.TargetService;
-import com.crm.springbootjwtimplementation.util.Constants.ApiMessages;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.http.HttpStatus;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import com.crm.springbootjwtimplementation.domain.ManagerDetails;
+import com.crm.springbootjwtimplementation.domain.SalesmanDetails;
+import com.crm.springbootjwtimplementation.domain.Target;
+import com.crm.springbootjwtimplementation.domain.dto.TargetRequestDTO;
+import com.crm.springbootjwtimplementation.domain.dto.TargetResponseDTO;
+import com.crm.springbootjwtimplementation.repository.ManagerDetailsRepository;
+import com.crm.springbootjwtimplementation.repository.SalesmanDetailsRepository;
+import com.crm.springbootjwtimplementation.repository.TargetRepository;
+import com.crm.springbootjwtimplementation.service.TargetService;
 
 @Service
 public class TargetServiceImpl implements TargetService {
 
     @Autowired
     private TargetRepository targetRepository;
-
+    
     @Autowired
-    private UserRepository userRepository;
-
+    private ManagerDetailsRepository managerDetailsRepository;
+    
     @Autowired
-    private ModelMapper modelMapper;
+    private SalesmanDetailsRepository salesmanDetailsRepository;
 
     @Override
-    public TargetResponseDTO createTarget(TargetRequestDTO targetRequestDTO) {
-        if (Objects.isNull(targetRequestDTO)) {
-            throw new RuntimeException(ApiMessages.INVALID_INPUT_DATA);
-        }
-    
-        // Fetch UserDetails entities for assignedTo and assignedBy using the IDs from the DTO
-        User assignedTo = userRepository.findById(targetRequestDTO.getAssignedToIds())
-                .orElseThrow(() -> new RuntimeException(ApiMessages.USER_NOT_FOUND + targetRequestDTO.getAssignedToIds()));
-    
-        User assignedBy = userRepository.findById(targetRequestDTO.getAssignedByIds())
-                .orElseThrow(() -> new RuntimeException(ApiMessages.USER_NOT_FOUND + targetRequestDTO.getAssignedByIds()));
-    
-        // Map DTO to entity
-        Target target = modelMapper.map(targetRequestDTO, Target.class);
-        target.setAssignedToId(assignedTo);
-        target.setAssignedById(assignedBy);
-    
-        // Save the target and map it back to DTO
-        target = targetRepository.save(target);
-        return modelMapper.map(target, TargetResponseDTO.class);
-    }
-    
-    
-    @Override
-    public TargetResponseDTO updateTarget(Long id, TargetRequestDTO targetRequestDTO) {
-        if (Objects.isNull(targetRequestDTO)) {
-            throw new RuntimeException(ApiMessages.INVALID_INPUT_DATA);
-        }
+    public TargetResponseDTO createTarget(TargetRequestDTO requestDTO, Long managerUserId) {
+        // Fetch the ManagerDetails based on authenticated user id (manager)
+        ManagerDetails manager = managerDetailsRepository.findByUserId(managerUserId)
+                .orElseThrow(() -> new RuntimeException("Manager not found for user id " + managerUserId));
+        
+        // Fetch SalesmanDetails from request
+        SalesmanDetails salesman = salesmanDetailsRepository.findById(requestDTO.getSalesmanId())
+                .orElseThrow(() -> new RuntimeException("Salesman not found with id " + requestDTO.getSalesmanId()));
 
-        // Fetch existing target
-        Target existingTarget = targetRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(ApiMessages.TARGET_NOT_FOUND + id));
-
-        // Map fields from request to existing entity
-        modelMapper.typeMap(TargetRequestDTO.class, Target.class).addMappings(mapper -> {
-            mapper.skip(Target::setId); // Skip mapping ID
-        });
-        modelMapper.map(targetRequestDTO, existingTarget);
-
-        // Update related entities
-        if (targetRequestDTO.getAssignedToIds() != null) {
-            User assignedTo = userRepository.findById(targetRequestDTO.getAssignedToIds())
-                    .orElseThrow(() -> new RuntimeException(ApiMessages.USER_NOT_FOUND + targetRequestDTO.getAssignedToIds()));
-            existingTarget.setAssignedToId(assignedTo);
-        }
-
-        if (targetRequestDTO.getAssignedByIds() != null) {
-            User assignedBy = userRepository.findById(targetRequestDTO.getAssignedByIds())
-                    .orElseThrow(() -> new RuntimeException(ApiMessages.USER_NOT_FOUND + targetRequestDTO.getAssignedByIds()));
-            existingTarget.setAssignedById(assignedBy);
-        }
-
-        // Save updated target
-        Target updatedTarget = targetRepository.save(existingTarget);
-        return modelMapper.map(updatedTarget, TargetResponseDTO.class);
-    }
-
-    @Override
-    public void deleteTarget(Long id) {
-        if (!targetRepository.existsById(id)) {
-            throw new RuntimeException(ApiMessages.TARGET_NOT_FOUND + id);
-        }
-        targetRepository.deleteById(id);
-    }
-
-    @Override
-    public TargetResponseDTO getTargetById(Long id) {
-        Target target = targetRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(ApiMessages.TARGET_NOT_FOUND + id));
-        return modelMapper.map(target, TargetResponseDTO.class);
+        Target target = new Target();
+        target.setDescription(requestDTO.getDescription());
+        target.setDeadline(requestDTO.getDeadline());
+        target.setMonthlyOutletCount(requestDTO.getMonthlyOutletCount());
+        target.setMonthlyTargetAmount(requestDTO.getMonthlyTargetAmount());
+        target.setMonthYear(requestDTO.getMonthYear());
+        target.setManager(manager);
+        target.setSalesman(salesman);
+        // isAchieved remains false by default
+        
+        Target saved = targetRepository.save(target);
+        return mapToResponseDTO(saved);
     }
 
     @Override
     public List<TargetResponseDTO> getAllTargets() {
         return targetRepository.findAll().stream()
-                .map(target -> modelMapper.map(target, TargetResponseDTO.class))
+                .map(this::mapToResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<TargetResponseDTO> getTargetsByAssignedTo(Long assignedToId) {
-        List<Target> targets = targetRepository.findByAssignedToIdId(assignedToId);
-        if (targets.isEmpty()) {
-            throw new RuntimeException(ApiMessages.TARGET_NOT_FOUND + assignedToId);
-        }
-        return targets.stream()
-                .map(target -> modelMapper.map(target, TargetResponseDTO.class))
+    public List<TargetResponseDTO> getTargetsByMonth(String monthYear) {
+        return targetRepository.findByMonthYear(monthYear).stream()
+                .map(this::mapToResponseDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<TargetResponseDTO> getCurrentMonthTargetsForSalesman(Long salesmanId) {
+        return targetRepository.findBySalesmanId(salesmanId).stream()
+                .filter(t -> t.getMonthYear().equalsIgnoreCase(java.time.LocalDate.now().toString().substring(0,7))) // assuming format "YYYY-MM"
+                .map(this::mapToResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public TargetResponseDTO updateTarget(Long id, TargetRequestDTO requestDTO, Long managerUserId) {
+        Target target = targetRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Target not found with id " + id));
+        
+        // Optionally, verify the manager has permission to update.
+        if (!target.getManager().getUser().getId().equals(managerUserId)) {
+            throw new RuntimeException("Unauthorized update attempt");
+        }
+        
+        // Update provided fields
+        if (requestDTO.getDescription() != null) {
+            target.setDescription(requestDTO.getDescription());
+        }
+        if (requestDTO.getDeadline() != null) {
+            target.setDeadline(requestDTO.getDeadline());
+        }
+        if (requestDTO.getMonthlyOutletCount() != 0) {
+            target.setMonthlyOutletCount(requestDTO.getMonthlyOutletCount());
+        }
+        if (requestDTO.getMonthlyTargetAmount() != null) {
+            target.setMonthlyTargetAmount(requestDTO.getMonthlyTargetAmount());
+        }
+        if (requestDTO.getMonthYear() != null) {
+            target.setMonthYear(requestDTO.getMonthYear());
+        }
+        // For salesman update, if provided
+        if (requestDTO.getSalesmanId() != null) {
+            SalesmanDetails salesman = salesmanDetailsRepository.findById(requestDTO.getSalesmanId())
+                    .orElseThrow(() -> new RuntimeException("Salesman not found with id " + requestDTO.getSalesmanId()));
+            target.setSalesman(salesman);
+        }
+        Target updated = targetRepository.save(target);
+        return mapToResponseDTO(updated);
+    }
+
+    @Override
+    public void deleteTarget(Long id, Long managerUserId) {
+        Target target = targetRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Target not found with id " + id));
+        // Verify that the authenticated manager is the creator
+        if (!target.getManager().getUser().getId().equals(managerUserId)) {
+            throw new RuntimeException("Unauthorized delete attempt");
+        }
+        targetRepository.delete(target);
+    }
+    
+    private TargetResponseDTO mapToResponseDTO(Target target) {
+        TargetResponseDTO dto = new TargetResponseDTO();
+        dto.setId(target.getId());
+        dto.setDescription(target.getDescription());
+        dto.setDeadline(target.getDeadline());
+        dto.setAchieved(target.isAchieved());
+        dto.setMonthlyOutletCount(target.getMonthlyOutletCount());
+        dto.setMonthlyTargetAmount(target.getMonthlyTargetAmount());
+        dto.setMonthYear(target.getMonthYear());
+        dto.setCreatedAt(target.getCreatedAt());
+        dto.setUpdatedAt(target.getUpdatedAt());
+        dto.setManagerId(target.getManager().getId());
+        dto.setSalesmanId(target.getSalesman().getId());
+        return dto;
     }
 }

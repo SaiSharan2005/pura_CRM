@@ -1,15 +1,19 @@
 package com.crm.springbootjwtimplementation.domain.dto;
 
-import lombok.Data;
-
+import java.math.BigDecimal;
 import java.time.LocalDate;
+
+import lombok.Data;
 
 @Data
 public class TargetRequestDTO {
     private String description;
     private LocalDate deadline;
-    private Boolean isAchieved;
-    private Long assignedToIds;
-    private Long assignedByIds;
-    private String assigneeRole;
+    private int monthlyOutletCount;
+    private BigDecimal monthlyTargetAmount;
+    // For creation the manager id is taken from the authenticated user.
+    // The salesman id is provided in the request.
+    private Long salesmanId;
+    // The month-year string in the format "YYYY-MM"
+    private String monthYear;
 }
