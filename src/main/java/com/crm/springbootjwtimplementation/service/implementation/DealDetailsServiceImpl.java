@@ -59,8 +59,11 @@ public class DealDetailsServiceImpl implements DealDetailsService {
                 .orElseThrow(() -> new CustomSecurityException(
                         "User not found with ID: " + dealRequest.getUserId(), HttpStatus.NOT_FOUND));
 
+
         // Map DealRequest to DealDetails and associate the fetched entities.
         DealDetails dealDetails = modelMapper.map(dealRequest, DealDetails.class);
+
+
         dealDetails.setCustomer(customer);
         dealDetails.setCart(cart);
         dealDetails.setUser(salesman);

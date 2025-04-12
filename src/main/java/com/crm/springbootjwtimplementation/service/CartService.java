@@ -17,5 +17,6 @@ public interface CartService {
     List<CartItem> getCartItems(Long userId);
     
     // New method to delete a cart by its id
+    CartDTO getCartById(Long cartId);
     void deleteCart(Long cartId);
 }

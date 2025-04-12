@@ -4,9 +4,11 @@ import com.crm.springbootjwtimplementation.domain.Cart;
 import com.crm.springbootjwtimplementation.domain.CartItem;
 import com.crm.springbootjwtimplementation.domain.CartStatus;
 import com.crm.springbootjwtimplementation.domain.ProductVariant;
+import com.crm.springbootjwtimplementation.domain.ProductVariantImage;
 import com.crm.springbootjwtimplementation.domain.User;
 import com.crm.springbootjwtimplementation.domain.dto.CartDTO;
 import com.crm.springbootjwtimplementation.domain.dto.CartItemDTO;
+import com.crm.springbootjwtimplementation.domain.dto.ProductVariantDTO;
 import com.crm.springbootjwtimplementation.repository.CartItemRepository;
 import com.crm.springbootjwtimplementation.repository.CartRepository;
 import com.crm.springbootjwtimplementation.repository.ProductRepository;
@@ -93,16 +95,37 @@ public class CartServiceImpl implements CartService {
         );
     }
 
-    // Updated to map the product variant.
-    private CartItemDTO mapToCartItemDTO(CartItem cartItem) {
-        return new CartItemDTO(
-                cartItem.getId(),
-                cartItem.getProductVariant(), // Updated field from product to productVariant
-                cartItem.getQuantity(),
-                cartItem.getPrice(),
-                cartItem.getTotalPrice()
-        );
-    }
+
+
+private CartItemDTO mapToCartItemDTO(CartItem cartItem) {
+    return new CartItemDTO(
+            cartItem.getId(),
+            mapToProductVariantDTO(cartItem.getProductVariant()), // now mapping to DTO
+            cartItem.getQuantity(),
+            cartItem.getPrice(),
+            cartItem.getTotalPrice()
+    );
+}
+
+private ProductVariantDTO mapToProductVariantDTO(ProductVariant variant) {
+    ProductVariantDTO dto = new ProductVariantDTO();
+    dto.setId(variant.getId());
+    dto.setVariantName(variant.getVariantName());
+    dto.setPrice(variant.getPrice());
+    dto.setSku(variant.getSku());
+    dto.setUnits(variant.getUnits());
+    dto.setCreatedDate(variant.getCreatedDate());
+    dto.setUpdatedDate(variant.getUpdatedDate());
+    dto.setProductId(variant.getProduct().getId());
+    // Map image URLs from the variant's images list.
+    dto.setImageUrls(
+        variant.getImages()
+               .stream()
+               .map(ProductVariantImage::getImageUrl)
+               .collect(Collectors.toList())
+    );
+    return dto;
+}
 
     // Changed parameter name from productId to variantId.
     @Override
@@ -194,4 +217,14 @@ public class CartServiceImpl implements CartService {
                 .orElseThrow(() -> new RuntimeException("Cart not found"));
         cartRepository.delete(cart);
     }
+
+    @Override
+    public CartDTO getCartById(Long cartId) {
+        return cartRepository.findById(cartId)
+                .map(this::mapToCartDTO)
+                .orElseThrow(() -> new RuntimeException("Cart not found with id " + cartId));
+    }
+
+
 }
+

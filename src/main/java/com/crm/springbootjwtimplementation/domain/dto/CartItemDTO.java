@@ -14,7 +14,7 @@ import com.crm.springbootjwtimplementation.domain.ProductVariant;
 @NoArgsConstructor
 public class CartItemDTO {
     private Long id;
-    private ProductVariant productVariant;
+    private ProductVariantDTO productVariant;
     private Integer quantity;
     private BigDecimal price;
     private BigDecimal totalPrice;

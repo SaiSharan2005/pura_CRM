@@ -76,4 +76,14 @@ public class CartController {
         cartService.deleteCart(cartId);
         return ResponseEntity.ok("Cart with id " + cartId + " has been deleted");
     }
+    @GetMapping("/{cartId}")
+    public ResponseEntity<CartDTO> getCartById(@PathVariable Long cartId) {
+        // If you updated the service to return a DTO:
+        CartDTO cartDTO = cartService.getCartById(cartId);
+        return ResponseEntity.ok(cartDTO);
+
+        // If you kept the service to return the entity, then map it here:
+        // Cart cart = cartService.getCartById(cartId);
+        // return ResponseEntity.ok(mapToCartDTO(cart));
+    }
 }
