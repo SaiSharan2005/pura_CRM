@@ -4,7 +4,7 @@ import com.crm.springbootjwtimplementation.domain.Cart;
 import com.crm.springbootjwtimplementation.domain.CartItem;
 import com.crm.springbootjwtimplementation.domain.dto.CartDTO;
 import com.crm.springbootjwtimplementation.domain.dto.CartRequest;
-import com.crm.springbootjwtimplementation.domain.dto.TokenResponseDTO;
+import com.crm.springbootjwtimplementation.domain.dto.users.TokenResponseDTO;
 import com.crm.springbootjwtimplementation.service.AuthService;
 import com.crm.springbootjwtimplementation.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;

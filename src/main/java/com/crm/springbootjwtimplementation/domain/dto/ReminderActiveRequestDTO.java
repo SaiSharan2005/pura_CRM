@@ -1,8 +1,13 @@
 package com.crm.springbootjwtimplementation.domain.dto;
 
-import lombok.Data;
-
-@Data
 public class ReminderActiveRequestDTO {
     private boolean isActive;
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
 }

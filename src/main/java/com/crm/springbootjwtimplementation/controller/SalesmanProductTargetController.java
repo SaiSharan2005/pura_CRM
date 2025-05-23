@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.crm.springbootjwtimplementation.domain.dto.ResponseMessageDTO;
 import com.crm.springbootjwtimplementation.domain.dto.SalesmanProductTargetRequestDTO;
 import com.crm.springbootjwtimplementation.domain.dto.SalesmanProductTargetResponseDTO;
-import com.crm.springbootjwtimplementation.domain.dto.TokenResponseDTO;
+import com.crm.springbootjwtimplementation.domain.dto.users.TokenResponseDTO;
 import com.crm.springbootjwtimplementation.service.AuthService;
 import com.crm.springbootjwtimplementation.service.SalesmanProductTargetService;
 
@@ -36,7 +36,7 @@ public class SalesmanProductTargetController {
         Long salesmanUserId = userToken.getId();
         targetService.createSalesmanProductTarget(requestDTO, salesmanUserId);
         ResponseMessageDTO response = new ResponseMessageDTO();
-        response.setMsg("Salesman product target created successfully");
+        response.setMessage("Salesman product target created successfully");
         response.setSuccess(true);
         return response;
     }
@@ -68,7 +68,7 @@ public class SalesmanProductTargetController {
         Long salesmanUserId = userToken.getId();
         targetService.updateSalesmanProductTarget(id, requestDTO, salesmanUserId);
         ResponseMessageDTO response = new ResponseMessageDTO();
-        response.setMsg("Salesman product target updated successfully");
+        response.setMessage("Salesman product target updated successfully");
         response.setSuccess(true);
         return response;
     }
@@ -80,7 +80,7 @@ public class SalesmanProductTargetController {
         Long salesmanUserId = userToken.getId();
         targetService.deleteSalesmanProductTarget(id, salesmanUserId);
         ResponseMessageDTO response = new ResponseMessageDTO();
-        response.setMsg("Salesman product target deleted successfully");
+        response.setMessage("Salesman product target deleted successfully");
         response.setSuccess(true);
         return response;
     }

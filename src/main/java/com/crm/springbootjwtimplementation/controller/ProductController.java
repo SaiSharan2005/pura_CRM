@@ -2,7 +2,7 @@ package com.crm.springbootjwtimplementation.controller;
 
 import com.crm.springbootjwtimplementation.domain.dto.ProductDTO;
 import com.crm.springbootjwtimplementation.domain.dto.ProductVariantDTO;
-import com.crm.springbootjwtimplementation.domain.dto.TokenResponseDTO;
+import com.crm.springbootjwtimplementation.domain.dto.users.TokenResponseDTO;
 import com.crm.springbootjwtimplementation.service.AuthService;
 import com.crm.springbootjwtimplementation.service.ProductService;
 import com.crm.springbootjwtimplementation.service.ProductVariantService;

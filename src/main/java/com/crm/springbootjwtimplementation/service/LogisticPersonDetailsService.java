@@ -1,18 +1,20 @@
 package com.crm.springbootjwtimplementation.service;
 
-import com.crm.springbootjwtimplementation.domain.dto.LogisticPersonDetailsDTO;
+import org.springframework.data.domain.Page;
 
-import java.util.List;
-
+import com.crm.springbootjwtimplementation.domain.dto.users.LogisticPersonDetailsDTO;
+import com.crm.springbootjwtimplementation.domain.dto.users.LogisticPersonDetailsResponseDTO;
 public interface LogisticPersonDetailsService {
 
-    LogisticPersonDetailsDTO createLogisticPersonDetails(Long userId, LogisticPersonDetailsDTO dto);
+  LogisticPersonDetailsDTO create(Long userId,
+      LogisticPersonDetailsDTO dto);
 
-    List<LogisticPersonDetailsDTO> getAllLogisticPersons();
+  Page<LogisticPersonDetailsResponseDTO> list(int page, int size);
 
-    LogisticPersonDetailsDTO getLogisticPersonById(Long id);
+  LogisticPersonDetailsResponseDTO getByUserId(Long userId);
 
-    LogisticPersonDetailsDTO updateLogisticPersonById(Long id, LogisticPersonDetailsDTO dto);
+  LogisticPersonDetailsDTO update(Long userId,
+      LogisticPersonDetailsDTO dto);
 
-    void deleteLogisticPersonById(Long id);
+  void delete(Long userId);
 }

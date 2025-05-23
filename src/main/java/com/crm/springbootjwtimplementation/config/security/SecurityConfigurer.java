@@ -65,7 +65,7 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter implements 
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
             .allowedOrigins("*") // Allows any origin
-            .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+            .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
             .allowedHeaders("*")
             .allowCredentials(false); // Disables credentials for all requests
     }

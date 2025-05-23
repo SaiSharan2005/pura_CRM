@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.crm.springbootjwtimplementation.domain.dto.ResponseMessageDTO;
 import com.crm.springbootjwtimplementation.domain.dto.TargetRequestDTO;
 import com.crm.springbootjwtimplementation.domain.dto.TargetResponseDTO;
-import com.crm.springbootjwtimplementation.domain.dto.TokenResponseDTO;
+import com.crm.springbootjwtimplementation.domain.dto.users.TokenResponseDTO;
 import com.crm.springbootjwtimplementation.service.AuthService;
 import com.crm.springbootjwtimplementation.service.TargetService;
 
@@ -36,7 +36,7 @@ public class TargetController {
         Long managerUserId = userToken.getId();
         targetService.createTarget(requestDTO, managerUserId);
         ResponseMessageDTO response = new ResponseMessageDTO();
-        response.setMsg("Target created successfully");
+        response.setMessage("Target created successfully");
         response.setSuccess(true);
         return response;
     }
@@ -69,7 +69,7 @@ public class TargetController {
         Long managerUserId = userToken.getId();
         targetService.updateTarget(id, requestDTO, managerUserId);
         ResponseMessageDTO response = new ResponseMessageDTO();
-        response.setMsg("Target updated successfully");
+        response.setMessage("Target updated successfully");
         response.setSuccess(true);
         return response;
     }
@@ -81,7 +81,7 @@ public class TargetController {
         Long managerUserId = userToken.getId();
         targetService.deleteTarget(id, managerUserId);
         ResponseMessageDTO response = new ResponseMessageDTO();
-        response.setMsg("Target deleted successfully");
+        response.setMessage("Target deleted successfully");
         response.setSuccess(true);
         return response;
     }

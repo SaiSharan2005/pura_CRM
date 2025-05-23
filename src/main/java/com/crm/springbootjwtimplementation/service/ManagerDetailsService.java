@@ -1,18 +1,47 @@
 package com.crm.springbootjwtimplementation.service;
 
-import com.crm.springbootjwtimplementation.domain.dto.ManagerDetailsDTO;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import com.crm.springbootjwtimplementation.domain.dto.users.ManagerDetailsDTO;
+import com.crm.springbootjwtimplementation.domain.dto.users.ManagerDetailsResponseDTO;
 
 public interface ManagerDetailsService {
 
-    ManagerDetailsDTO createManagerDetails(Long userId,ManagerDetailsDTO managerDetailsDTO);
+    /**
+     * Create a new ManagerDetails record.
+     * @param dto incoming data (must contain userId)
+     * @return newly created record as a ResponseDTO
+     */
+    ManagerDetailsDTO createManagerDetails(ManagerDetailsDTO dto);
 
-    List<ManagerDetailsDTO> getAllManagerDetails();
+    /**
+     * List all ManagerDetails in a paginated fashion.
+     * @param page zero‑based page index
+     * @param size page size (must be >= 1)
+     * @return a page of ManagerDetailsResponseDTO
+     */
+    Page<ManagerDetailsResponseDTO> getAllManagerDetails(int page, int size);
 
-    ManagerDetailsDTO getManagerDetailsById(Long id);
+    /**
+     * Fetch the ManagerDetails for a given user.
+     * @param userId the ID of the user owning the manager record
+     * @return the matching ManagerDetailsResponseDTO
+     */
+    ManagerDetailsResponseDTO getManagerDetailsByUserId(Long userId);
 
-    ManagerDetailsDTO updateManagerDetailsById(Long id, ManagerDetailsDTO managerDetailsDTO);
+    /**
+     * Update the ManagerDetails for a given user.
+     * @param userId the ID of the user owning the manager record
+     * @param dto the updated fields
+     * @return the updated ManagerDetailsResponseDTO
+     */
+    ManagerDetailsDTO updateManagerDetailsByUserId(
+        Long userId,
+        ManagerDetailsDTO dto
+    );
 
-    void deleteManagerDetailsById(Long id);
+    /**
+     * Delete the ManagerDetails for a given user.
+     * @param userId the ID of the user whose manager record is to be deleted
+     */
+    void deleteManagerDetailsByUserId(Long userId);
 }

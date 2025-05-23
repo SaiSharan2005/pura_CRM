@@ -37,7 +37,7 @@ public class SalesmanProductTargetServiceImpl implements SalesmanProductTargetSe
     @Override
     public SalesmanProductTargetResponseDTO createSalesmanProductTarget(SalesmanProductTargetRequestDTO dto, Long salesmanUserId) {
         // Look up the SalesmanDetails for the authenticated salesman.
-        SalesmanDetails salesman = salesmanDetailsRepository.findByUserId(salesmanUserId);
+        SalesmanDetails salesman = salesmanDetailsRepository.findByUserId(salesmanUserId).get();
         if (salesman == null) {
             throw new RuntimeException("Salesman not found");
         }
@@ -81,7 +81,7 @@ public class SalesmanProductTargetServiceImpl implements SalesmanProductTargetSe
     @Override
     public List<SalesmanProductTargetResponseDTO> getCurrentMonthTargetsForSalesman(Long salesmanUserId) {
         // Get the authenticated salesman's details.
-        SalesmanDetails salesman = salesmanDetailsRepository.findByUserId(salesmanUserId);
+        SalesmanDetails salesman = salesmanDetailsRepository.findByUserId(salesmanUserId).get();
         if (salesman == null) {
             throw new RuntimeException("Salesman not found for user id " + salesmanUserId);
         }

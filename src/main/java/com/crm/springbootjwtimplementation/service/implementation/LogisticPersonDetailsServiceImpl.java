@@ -1,88 +1,114 @@
 package com.crm.springbootjwtimplementation.service.implementation;
 
-import com.crm.springbootjwtimplementation.domain.LogisticPersonDetails;
+import org.springframework.data.domain.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
+
 import com.crm.springbootjwtimplementation.domain.User;
-import com.crm.springbootjwtimplementation.domain.dto.LogisticPersonDetailsDTO;
+import com.crm.springbootjwtimplementation.domain.dto.users.LogisticPersonDetailsDTO;
+import com.crm.springbootjwtimplementation.domain.dto.users.LogisticPersonDetailsResponseDTO;
 import com.crm.springbootjwtimplementation.exceptions.security.CustomSecurityException;
+import com.crm.springbootjwtimplementation.mapper.LogisticPersonDetailsMapper;
 import com.crm.springbootjwtimplementation.repository.LogisticPersonDetailsRepository;
 import com.crm.springbootjwtimplementation.repository.UserRepository;
 import com.crm.springbootjwtimplementation.service.LogisticPersonDetailsService;
-
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import com.crm.springbootjwtimplementation.util.Constants.ApiMessages;
 
 @Service
-public class LogisticPersonDetailsServiceImpl implements LogisticPersonDetailsService {
+@RequiredArgsConstructor
+public class LogisticPersonDetailsServiceImpl
+    implements LogisticPersonDetailsService {
 
-    @Autowired
-    private LogisticPersonDetailsRepository repository;
+  private final LogisticPersonDetailsRepository repo;
+  private final UserRepository userRepo;
+  private final LogisticPersonDetailsMapper mapper;
 
-    @Autowired
-    private UserRepository userRepository;
+  @Override
+  @Transactional
+  public LogisticPersonDetailsDTO create(
+        Long userId,
+        LogisticPersonDetailsDTO dto) {
 
-    @Autowired
-    private ModelMapper modelMapper;
-
-    @Override
-    public LogisticPersonDetailsDTO createLogisticPersonDetails(Long userId, LogisticPersonDetailsDTO dto) {
-        if (Objects.isNull(userId) || Objects.isNull(dto)) {
-            throw new CustomSecurityException("Invalid input data", HttpStatus.BAD_REQUEST);
-        }
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomSecurityException("User not found with ID: " + userId, HttpStatus.NOT_FOUND));
-
-        dto.setUser(user);
-        LogisticPersonDetails entity = modelMapper.map(dto, LogisticPersonDetails.class);
-        entity = repository.save(entity);
-
-        return modelMapper.map(entity, LogisticPersonDetailsDTO.class);
+    if (dto == null) {
+      throw new CustomSecurityException(
+        ApiMessages.INVALID_INPUT_DATA, HttpStatus.BAD_REQUEST);
     }
 
-    @Override
-    public List<LogisticPersonDetailsDTO> getAllLogisticPersons() {
-        return repository.findAll().stream()
-                .map(entity -> modelMapper.map(entity, LogisticPersonDetailsDTO.class))
-                .collect(Collectors.toList());
+    // ensure the User exists
+    User user = userRepo.findById(userId)
+      .orElseThrow(() -> new CustomSecurityException(
+        ApiMessages.USER_NOT_FOUND + userId,
+        HttpStatus.NOT_FOUND));
+
+    // prevent duplicate details per user
+    if (repo.existsByUserId(userId)) {
+      throw new CustomSecurityException(
+        ApiMessages.LOGISTIC_PERSON_EXISTS + userId,
+        HttpStatus.CONFLICT);
     }
 
-    @Override
-    public LogisticPersonDetailsDTO getLogisticPersonById(Long id) {
-        LogisticPersonDetails entity = repository.findByUserId(id)
-                .orElseThrow(() -> new CustomSecurityException("Logistic person not found with ID: " + id, HttpStatus.NOT_FOUND));
-        return modelMapper.map(entity, LogisticPersonDetailsDTO.class);
+    // map DTO → Entity + attach user
+    var entity = mapper.toEntity(dto);
+    entity.setUser(user);
+
+    var saved = repo.save(entity);
+    return mapper.toDto(saved);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Page<LogisticPersonDetailsResponseDTO> list(int page, int size) {
+    if (page < 0 || size <= 0) {
+      throw new CustomSecurityException(
+        ApiMessages.INVALID_INPUT_DATA, HttpStatus.BAD_REQUEST);
     }
 
-    @Override
-    public LogisticPersonDetailsDTO updateLogisticPersonById(Long id, LogisticPersonDetailsDTO dto) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new CustomSecurityException("User not found with ID: " + id, HttpStatus.NOT_FOUND));
+    Pageable pg = PageRequest.of(page, size, Sort.by("id").ascending());
+    return repo.findAll(pg)
+               .map(mapper::toResponseDto);
+  }
 
-        dto.setUser(user);
-        LogisticPersonDetails existingEntity = repository.findByUser(user);
+  @Override
+  @Transactional(readOnly = true)
+  public LogisticPersonDetailsResponseDTO getByUserId(Long userId) {
+    var entity = repo.findByUserId(userId)
+      .orElseThrow(() -> new CustomSecurityException(
+        ApiMessages.LOGISTIC_PERSON_NOT_FOUND + userId,
+        HttpStatus.NOT_FOUND));
 
-        if (existingEntity == null) {
-            throw new CustomSecurityException("Logistic person not found with ID: " + id, HttpStatus.NOT_FOUND);
-        }
+    return mapper.toResponseDto(entity);
+  }
 
-        modelMapper.map(dto, existingEntity);
-        LogisticPersonDetails updatedEntity = repository.save(existingEntity);
+  @Override
+  @Transactional
+  public LogisticPersonDetailsDTO update(
+        Long userId,
+        LogisticPersonDetailsDTO dto) {
 
-        return modelMapper.map(updatedEntity, LogisticPersonDetailsDTO.class);
-    }
+    var existing = repo.findByUserId(userId)
+      .orElseThrow(() -> new CustomSecurityException(
+        ApiMessages.LOGISTIC_PERSON_NOT_FOUND + userId,
+        HttpStatus.NOT_FOUND));
 
-    @Override
-    public void deleteLogisticPersonById(Long id) {
-        if (!repository.existsByUserId(id)) {
-            throw new CustomSecurityException("Logistic person not found with ID: " + id, HttpStatus.NOT_FOUND);
-        }
+    // in-place, ignore nulls
+    mapper.updateFromDto(dto, existing);
 
-        repository.deleteByUserId(id);
-    }
+    var updated = repo.save(existing);
+    return mapper.toDto(updated);
+  }
+
+  @Override
+  @Transactional
+  public void delete(Long userId) {
+    var existing = repo.findByUserId(userId)
+      .orElseThrow(() -> new CustomSecurityException(
+        ApiMessages.LOGISTIC_PERSON_NOT_FOUND + userId,
+        HttpStatus.NOT_FOUND));
+
+    repo.delete(existing);
+    // you can choose to return a DTO or simply void; controller can respond with 204 + message
+  }
 }

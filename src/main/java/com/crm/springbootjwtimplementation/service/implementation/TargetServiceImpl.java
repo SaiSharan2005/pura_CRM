@@ -62,7 +62,7 @@ public class TargetServiceImpl implements TargetService {
     @Override
     public List<TargetResponseDTO> getTargetsByMonth(String monthYear) {
         return targetRepository.findByMonthYear(monthYear).stream()
-                .map(this::mapToResponseDTO)
+                .map(this::mapToResponseDTO) 
                 .collect(Collectors.toList());
     }
 

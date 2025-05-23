@@ -1,21 +1,16 @@
+// SalesmanDetailsService.java
 package com.crm.springbootjwtimplementation.service;
 
-import com.crm.springbootjwtimplementation.domain.dto.SalesmanDetailsDTO;
+import org.springframework.data.domain.Page;
 
-import java.util.List;
+import com.crm.springbootjwtimplementation.domain.dto.users.*;
 
 public interface SalesmanDetailsService {
-    SalesmanDetailsDTO createSalesmanDetails(Long userid , SalesmanDetailsDTO salesmanDetailsDTO);
-
-    List<SalesmanDetailsDTO> getAllSalesmanDetails();
-
-    SalesmanDetailsDTO getSalesmanDetailsById(Long id);
-
-    SalesmanDetailsDTO updateSalesmanDetailsById(Long id, SalesmanDetailsDTO salesmanDetailsDTO);
-
-    SalesmanDetailsDTO getSalesmanDetailsByUsername(String username);
-
-    SalesmanDetailsDTO updateSalesmanDetailsByUsername(String username, SalesmanDetailsDTO salesmanDetailsDTO);
-
-    void deleteSalesmanDetailsById(Long id);
+    SalesmanDetailsResponseDTO createSalesmanDetails(Long userId, SalesmanDetailsDTO dto);
+    Page<SalesmanDetailsResponseDTO> getAllSalesmanDetails(int page, int size);
+    SalesmanDetailsResponseDTO getSalesmanDetailsByUserId(Long userId);
+    SalesmanDetailsResponseDTO updateSalesmanDetailsByUserId(Long userId, SalesmanDetailsDTO dto);
+    void deleteSalesmanDetailsByUserId(Long userId);
+    SalesmanDetailsResponseDTO getSalesmanDetailsByUsername(String username);
+    SalesmanDetailsResponseDTO updateSalesmanDetailsByUsername(String username, SalesmanDetailsDTO dto);
 }

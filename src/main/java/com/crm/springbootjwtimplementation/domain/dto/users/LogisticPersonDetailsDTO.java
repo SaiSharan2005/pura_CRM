@@ -1,15 +1,19 @@
-package com.crm.springbootjwtimplementation.domain.dto;
+// src/main/java/com/crm/springbootjwtimplementation/domain/dto/logistic/LogisticPersonDetailsDTO.java
+package com.crm.springbootjwtimplementation.domain.dto.users;
 
 import lombok.Data;
-
 import javax.validation.constraints.*;
-
-import com.crm.springbootjwtimplementation.domain.User;
-
 import java.time.LocalDate;
 
+/**
+ * Incoming payload for create & update.
+ */
 @Data
 public class LogisticPersonDetailsDTO {
+
+    /** The FK to your users table; controller/service populates this from the auth token. */
+    @NotNull(message = "User ID is mandatory")
+    private Long userId;
 
     @NotBlank(message = "Phone number is mandatory")
     private String phoneNumber;
@@ -18,7 +22,7 @@ public class LogisticPersonDetailsDTO {
     private String address;
 
     @NotNull(message = "Date of birth cannot be null")
-    @Past(message = "Date of birth must be a past date")
+    @Past(message = "Date of birth must be in the past")
     private LocalDate dateOfBirth;
 
     @NotBlank(message = "Delivery areas cannot be blank")
@@ -30,10 +34,9 @@ public class LogisticPersonDetailsDTO {
     @NotBlank(message = "License number is mandatory")
     private String licenseNumber;
 
-    @NotBlank(message = "Status is mandatory")
+    /**  Defaults to ACTIVE if not provided */
     private String status = "ACTIVE";
 
+    /** Optional notes */
     private String notes;
-
-    private User user;
 }

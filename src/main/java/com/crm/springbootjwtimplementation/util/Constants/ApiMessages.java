@@ -10,6 +10,7 @@ public class ApiMessages {
     public static final String ONLY_ADMIN_ACCESS = "ONLY ADMINS CAN ACCESS";
     public static final String USER_ADMIN_ACCESS = "ONLY USERS AND ADMINS CAN ACCESS";
     public static final String SALESMAN_NOT_FOUND = "Salesman details not found for ID: ";
+    public static final String SALESMAN_DETAILS_ALREADY_EXIST = "Salesman details already exist for user : ";
     public static final String INVALID_INPUT_DATA = "Invalid input data provided";
     public static final String INVALID_ID = "Invalid ID provided";
     public static final String INVALID_USERNAME = "Invalid username provided";
@@ -18,11 +19,13 @@ public class ApiMessages {
     public static final String USER_HAS_NO_DEALS = "User has no deals";
     public static final String DELETED_SUCCESSFULLY = "Record deleted successfully";
 
-    
     public static final String TARGET_CREATED = "Target successfully created.";
     public static final String TARGET_UPDATED = "Target successfully updated.";
     public static final String TARGET_DELETED = "Target successfully deleted.";
     public static final String TARGET_NOT_FOUND = "Target not found.";
     public static final String TARGET_FETCHED = "Target fetched successfully.";
+
+    public static final String LOGISTIC_PERSON_EXISTS = "Logistic person details already exist for user: ";
+    public static final String LOGISTIC_PERSON_NOT_FOUND = "Logistic person not found for user ID: ";
 
 }

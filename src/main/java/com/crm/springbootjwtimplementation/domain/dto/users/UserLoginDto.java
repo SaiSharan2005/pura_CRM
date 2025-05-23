@@ -1,4 +1,4 @@
-package com.crm.springbootjwtimplementation.domain.dto;
+package com.crm.springbootjwtimplementation.domain.dto.users;
 
 
 import lombok.AllArgsConstructor;

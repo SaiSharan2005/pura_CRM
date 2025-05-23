@@ -16,7 +16,7 @@ import com.crm.springbootjwtimplementation.domain.dto.ReminderActiveRequestDTO;
 import com.crm.springbootjwtimplementation.domain.dto.ReminderRequestDTO;
 import com.crm.springbootjwtimplementation.domain.dto.ReminderResponseDTO;
 import com.crm.springbootjwtimplementation.domain.dto.ResponseMessageDTO;
-import com.crm.springbootjwtimplementation.domain.dto.TokenResponseDTO;
+import com.crm.springbootjwtimplementation.domain.dto.users.TokenResponseDTO;
 import com.crm.springbootjwtimplementation.service.AuthService;
 import com.crm.springbootjwtimplementation.service.ReminderService;
 
@@ -37,7 +37,7 @@ public class ReminderController {
         Long userId = userToken.getId();
         reminderService.createReminder(reminderRequestDTO, userId);
         ResponseMessageDTO response = new ResponseMessageDTO();
-        response.setMsg("Reminder created successfully");
+        response.setMessage("Reminder created successfully");
         response.setSuccess(true);
         return response;
     }
@@ -65,7 +65,7 @@ public class ReminderController {
         Long userId = userToken.getId();
         reminderService.updateReminder(id, reminderRequestDTO, userId);
         ResponseMessageDTO response = new ResponseMessageDTO();
-        response.setMsg("Reminder updated successfully");
+        response.setMessage("Reminder updated successfully");
         response.setSuccess(true);
         return response;
     }
@@ -83,9 +83,11 @@ public class ReminderController {
     public ResponseMessageDTO updateActiveStatus(@PathVariable Long id, @RequestBody ReminderActiveRequestDTO activeRequest) {
         TokenResponseDTO userToken = authService.getAuthenticatedUser();
         Long userId = userToken.getId();
+        System.out.println(activeRequest.isActive());
+        System.out.println("getljlkj");
         reminderService.updateReminderActiveStatus(id, activeRequest.isActive(), userId);
         ResponseMessageDTO response = new ResponseMessageDTO();
-        response.setMsg("Reminder active status updated successfully");
+        response.setMessage("Reminder active status updated successfully");
         response.setSuccess(true);
         return response;
     }

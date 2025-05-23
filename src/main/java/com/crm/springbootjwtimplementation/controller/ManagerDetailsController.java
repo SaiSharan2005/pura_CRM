@@ -1,85 +1,167 @@
 package com.crm.springbootjwtimplementation.controller;
 
-import com.crm.springbootjwtimplementation.domain.dto.ManagerDetailsDTO;
-import com.crm.springbootjwtimplementation.domain.dto.TokenResponseDTO;
+import com.crm.springbootjwtimplementation.domain.dto.ResponseMessageDTO;
+import com.crm.springbootjwtimplementation.domain.dto.users.ManagerDetailsDTO;
+import com.crm.springbootjwtimplementation.domain.dto.users.ManagerDetailsResponseDTO;
+import com.crm.springbootjwtimplementation.domain.dto.users.TokenResponseDTO;
 import com.crm.springbootjwtimplementation.service.AuthService;
 import com.crm.springbootjwtimplementation.service.ManagerDetailsService;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.http.*;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.security.Principal;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/managers")
+@Validated
 public class ManagerDetailsController {
 
-    @Autowired
-    private ManagerDetailsService managerDetailsService;
+    private final ManagerDetailsService managerService;
+    private final AuthService authService;
 
     @Autowired
-    private AuthService AuthService;
-
-
-    @PostMapping("/create")
-    public ResponseEntity<ManagerDetailsDTO> createManager(
-            @Validated @RequestBody ManagerDetailsDTO managerDetailsDTO) {
-
-        TokenResponseDTO userToken = AuthService.getAuthenticatedUser();
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(managerDetailsService.createManagerDetails(userToken.getId(),managerDetailsDTO));
+    public ManagerDetailsController(
+            ManagerDetailsService managerService,
+            AuthService authService) {
+        this.managerService = managerService;
+        this.authService = authService;
     }
 
-        // GET / (get about themselves using Principal)
-    @GetMapping("/")
-    public ResponseEntity<?> getManagerDetailsAboutSelf(Principal principal) {
-        // try {
-            TokenResponseDTO userToken = AuthService.getAuthenticatedUser();
-            return ResponseEntity.ok(managerDetailsService.getManagerDetailsById(userToken.getId()));
-        // } catch (Exception e) {
-        //     return ResponseEntity.badRequest().body(e.getMessage());
-        // }
+    /**
+     * Create manager details for the authenticated user.
+     * The incoming DTO must contain no userId field (we set it from the token).
+     */
+    @PostMapping
+    public ResponseEntity<ManagerDetailsDTO> create(
+            @Valid @RequestBody ManagerDetailsDTO dto) {
+
+        // override userId from logged‑in user
+        TokenResponseDTO user = authService.getAuthenticatedUser();
+        dto.setUserId(user.getId());
+
+        ManagerDetailsDTO created = managerService.createManagerDetails(dto);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(created);
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<List<ManagerDetailsDTO>> getAllManagers() {
-        return ResponseEntity.ok(managerDetailsService.getAllManagerDetails());
+    /**
+     * Create manager details for the authenticated user by admin.
+     * The incoming DTO must contain no userId field (we set it from the token).
+     */
+    @PostMapping("/{userId}")
+    public ResponseEntity<ManagerDetailsDTO> createByUserId(
+            @Valid @RequestBody ManagerDetailsDTO dto,
+            @PathVariable Long userId) {
+        dto.setUserId(userId);
+        ManagerDetailsDTO created =
+            managerService.createManagerDetails(dto);
+
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(created);
     }
 
+    /**
+     * List all manager records, paged.
+     * GET /api/managers?page=0&size=20
+     */
+    @GetMapping
+    public ResponseEntity<Page<ManagerDetailsResponseDTO>> listAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ManagerDetailsDTO> getManagerById(@PathVariable Long id) {
-        return ResponseEntity.ok(managerDetailsService.getManagerDetailsById(id));
+        Page<ManagerDetailsResponseDTO> dtos = managerService.getAllManagerDetails(page, size);
+
+        return ResponseEntity.ok(dtos);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ManagerDetailsDTO> updateManagerById(@PathVariable Long id,
-            @Validated @RequestBody ManagerDetailsDTO managerDetailsDTO) {
-        return ResponseEntity.ok(managerDetailsService.updateManagerDetailsById(id, managerDetailsDTO));
-    }
-    @PutMapping("/")
-    public ResponseEntity<ManagerDetailsDTO> updateManagerDetailsAboutSelf(@Validated @RequestBody ManagerDetailsDTO managerDetailsDTO) {
-        TokenResponseDTO userToken = AuthService.getAuthenticatedUser();
+    /**
+     * Get this user’s own manager record.
+     * GET /api/managers/me
+     */
+    @GetMapping("/me")
+    public ResponseEntity<ManagerDetailsResponseDTO> getMyDetails() {
+        TokenResponseDTO userToken = authService.getAuthenticatedUser();
+        ManagerDetailsResponseDTO dto = managerService.getManagerDetailsByUserId(userToken.getId());
 
-        return ResponseEntity.ok(managerDetailsService.updateManagerDetailsById(userToken.getId(), managerDetailsDTO));
+        return ResponseEntity.ok(dto);
     }
 
-    @DeleteMapping("/")
-    public ResponseEntity<Void> deleteManagerBySelf() {
-        TokenResponseDTO userToken = AuthService.getAuthenticatedUser();
-        
-        managerDetailsService.deleteManagerDetailsById(userToken.getId());
-        return ResponseEntity.noContent().build();
-    } 
-       
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteManagerById(@PathVariable Long id) {
-        managerDetailsService.deleteManagerDetailsById(id);
-        return ResponseEntity.noContent().build();
+    /**
+     * Get any user’s manager record by userId.
+     * GET /api/managers/{userId}
+     */
+    @GetMapping("/{userId}")
+    public ResponseEntity<ManagerDetailsResponseDTO> getByUserId(
+            @PathVariable Long userId) {
+
+        ManagerDetailsResponseDTO dto = managerService.getManagerDetailsByUserId(userId);
+
+        return ResponseEntity.ok(dto);
+    }
+
+    /**
+     * Update this user’s own manager record.
+     * PUT /api/managers/me
+     */
+    @PutMapping("/me")
+    public ResponseEntity<ManagerDetailsDTO> updateMyDetails(
+            @Valid @RequestBody ManagerDetailsDTO dto) {
+
+        TokenResponseDTO user = authService.getAuthenticatedUser();
+        dto.setUserId(user.getId());
+
+        ManagerDetailsDTO updated = managerService.updateManagerDetailsByUserId(user.getId(), dto);
+
+        return ResponseEntity.ok(updated);
+    }
+
+    /**
+     * Update any user’s manager by userId.
+     * PUT /api/managers/{userId}
+     */
+    @PutMapping("/{userId}")
+    public ResponseEntity<ManagerDetailsDTO> updateByUserId(
+            @PathVariable Long userId,
+            @Valid @RequestBody ManagerDetailsDTO dto) {
+
+        dto.setUserId(userId);
+        ManagerDetailsDTO updated = managerService.updateManagerDetailsByUserId(userId, dto);
+
+        return ResponseEntity.ok(updated);
+    }
+
+    /**
+     * Delete this user’s own manager record.
+     * DELETE /api/managers/me
+     */
+  @DeleteMapping("/me")
+    public ResponseEntity<ResponseMessageDTO> deleteMyDetails() {
+        TokenResponseDTO user = authService.getAuthenticatedUser();
+        managerService.deleteManagerDetailsByUserId(user.getId());
+
+        ResponseMessageDTO resp = new ResponseMessageDTO();
+        resp.setMessage("Your manager profile has been deleted");
+        resp.setSuccess(true);
+        return ResponseEntity.ok(resp);
+    }
+
+    /** Delete by userId */
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<ResponseMessageDTO> deleteByUserId(
+            @PathVariable Long userId) {
+
+        managerService.deleteManagerDetailsByUserId(userId);
+
+        ResponseMessageDTO resp = new ResponseMessageDTO();
+        resp.setMessage("Manager details for user " + userId + " deleted");
+        resp.setSuccess(true);
+        return ResponseEntity.ok(resp);
     }
 }

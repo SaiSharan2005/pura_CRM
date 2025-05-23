@@ -1,127 +1,154 @@
 package com.crm.springbootjwtimplementation.service.implementation;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
+
 import com.crm.springbootjwtimplementation.domain.SalesmanDetails;
 import com.crm.springbootjwtimplementation.domain.User;
-import com.crm.springbootjwtimplementation.domain.dto.SalesmanDetailsDTO;
+import com.crm.springbootjwtimplementation.domain.dto.users.*;
 import com.crm.springbootjwtimplementation.exceptions.security.CustomSecurityException;
+import com.crm.springbootjwtimplementation.mapper.SalesmanDetailsMapper;
 import com.crm.springbootjwtimplementation.repository.SalesmanDetailsRepository;
 import com.crm.springbootjwtimplementation.repository.UserRepository;
 import com.crm.springbootjwtimplementation.service.SalesmanDetailsService;
 import com.crm.springbootjwtimplementation.util.Constants.ApiMessages;
 
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
 @Service
+@RequiredArgsConstructor
 public class SalesmanDetailsServiceImpl implements SalesmanDetailsService {
 
-    @Autowired
-    private SalesmanDetailsRepository salesmanDetailsRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private ModelMapper modelMapper;
+    private final SalesmanDetailsRepository repo;
+    private final UserRepository userRepo;
+    private final SalesmanDetailsMapper mapper;
 
     @Override
-    public SalesmanDetailsDTO createSalesmanDetails(Long userId, SalesmanDetailsDTO salesmanDetailsDTO) {
-        if (Objects.isNull(userId) || Objects.isNull(salesmanDetailsDTO)) {
-            throw new CustomSecurityException(ApiMessages.INVALID_INPUT_DATA, HttpStatus.BAD_REQUEST);
+    @Transactional
+    public SalesmanDetailsResponseDTO createSalesmanDetails(Long userId, SalesmanDetailsDTO dto) {
+        if (userId == null || dto == null) {
+            throw new CustomSecurityException(
+                    ApiMessages.INVALID_INPUT_DATA, HttpStatus.BAD_REQUEST);
         }
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomSecurityException(ApiMessages.USER_NOT_FOUND + userId, HttpStatus.NOT_FOUND));
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new CustomSecurityException(
+                        ApiMessages.USER_NOT_FOUND + userId, HttpStatus.NOT_FOUND));
+        if (repo.findByUserId(userId).isPresent()) {
+            throw new CustomSecurityException(
+                    ApiMessages.SALESMAN_DETAILS_ALREADY_EXIST + userId,
+                    HttpStatus.BAD_REQUEST);
+        }
+        SalesmanDetails entity = mapper.toEntity(dto);
+        entity.setUser(user);
 
-        salesmanDetailsDTO.setUser(user);
-        SalesmanDetails salesmanDetails = modelMapper.map(salesmanDetailsDTO, SalesmanDetails.class);
-        salesmanDetails = salesmanDetailsRepository.save(salesmanDetails);
-
-        return modelMapper.map(salesmanDetails, SalesmanDetailsDTO.class);
+        SalesmanDetails saved = repo.save(entity);
+        return mapper.toResponseDto(saved);
     }
 
     @Override
-    public List<SalesmanDetailsDTO> getAllSalesmanDetails() {
-        return salesmanDetailsRepository.findAll().stream()
-                .map(salesman -> modelMapper.map(salesman, SalesmanDetailsDTO.class))
+    @Transactional(readOnly = true)
+    public Page<SalesmanDetailsResponseDTO> getAllSalesmanDetails(int page, int size) {
+        if (page < 0 || size <= 0) {
+            throw new CustomSecurityException(
+                    ApiMessages.INVALID_INPUT_DATA, HttpStatus.BAD_REQUEST);
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+        Page<SalesmanDetails> pagedEntities = repo.findAll(pageable);
+
+        List<SalesmanDetailsResponseDTO> dtos = pagedEntities.stream()
+                .map(mapper::toResponseDto)
                 .collect(Collectors.toList());
+
+        return new PageImpl<>(dtos, pageable, pagedEntities.getTotalElements());
     }
 
     @Override
-    public SalesmanDetailsDTO getSalesmanDetailsById(Long id) {
-        if (Objects.isNull(id)) {
-            throw new CustomSecurityException(ApiMessages.INVALID_ID, HttpStatus.BAD_REQUEST);
+    @Transactional(readOnly = true)
+    public SalesmanDetailsResponseDTO getSalesmanDetailsByUserId(Long userId) {
+        if (userId == null) {
+            throw new CustomSecurityException(
+                    ApiMessages.INVALID_INPUT_DATA, HttpStatus.BAD_REQUEST);
         }
 
-        SalesmanDetails salesmanDetails = salesmanDetailsRepository.findById(id)
-                .orElseThrow(() -> new CustomSecurityException(ApiMessages.SALESMAN_NOT_FOUND + id, HttpStatus.NOT_FOUND));
-        return modelMapper.map(salesmanDetails, SalesmanDetailsDTO.class);
+        SalesmanDetails entity = repo.findByUserId(userId)
+                .orElseThrow(() -> new CustomSecurityException(
+                        ApiMessages.SALESMAN_NOT_FOUND + userId, HttpStatus.NOT_FOUND));
+
+        return mapper.toResponseDto(entity);
     }
 
     @Override
-    public SalesmanDetailsDTO updateSalesmanDetailsById(Long id, SalesmanDetailsDTO salesmanDetailsDTO) {
-        if (Objects.isNull(id) || Objects.isNull(salesmanDetailsDTO)) {
-            throw new CustomSecurityException(ApiMessages.INVALID_INPUT_DATA, HttpStatus.BAD_REQUEST);
+    @Transactional
+    public SalesmanDetailsResponseDTO updateSalesmanDetailsByUserId(
+            Long userId, SalesmanDetailsDTO dto) {
+
+        if (userId == null || dto == null) {
+            throw new CustomSecurityException(
+                    ApiMessages.INVALID_INPUT_DATA, HttpStatus.BAD_REQUEST);
         }
 
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new CustomSecurityException(ApiMessages.USER_NOT_FOUND + id, HttpStatus.NOT_FOUND));
+        SalesmanDetails existing = repo.findByUserId(userId)
+                .orElseThrow(() -> new CustomSecurityException(
+                        ApiMessages.SALESMAN_NOT_FOUND + userId, HttpStatus.NOT_FOUND));
 
-        salesmanDetailsDTO.setUser(user);
-        SalesmanDetails existingSalesman = salesmanDetailsRepository.findByUser(user);
-
-        if (existingSalesman == null) {
-            throw new CustomSecurityException(ApiMessages.SALESMAN_NOT_FOUND + id, HttpStatus.NOT_FOUND);
-        }
-
-        modelMapper.map(salesmanDetailsDTO, existingSalesman);
-        SalesmanDetails updatedSalesman = salesmanDetailsRepository.save(existingSalesman);
-
-        return modelMapper.map(updatedSalesman, SalesmanDetailsDTO.class);
+        mapper.updateFromDto(dto, existing);
+        SalesmanDetails updated = repo.save(existing);
+        return mapper.toResponseDto(updated);
     }
 
     @Override
-    public SalesmanDetailsDTO getSalesmanDetailsByUsername(String username) {
-        if (Objects.isNull(username) || username.isEmpty()) {
-            throw new CustomSecurityException(ApiMessages.INVALID_USERNAME, HttpStatus.BAD_REQUEST);
+    @Transactional
+    public void deleteSalesmanDetailsByUserId(Long userId) {
+        if (userId == null) {
+            throw new CustomSecurityException(
+                    ApiMessages.INVALID_INPUT_DATA, HttpStatus.BAD_REQUEST);
         }
 
-        SalesmanDetails salesmanDetails = salesmanDetailsRepository.findByUserUsername(username)
-                .orElseThrow(() -> new CustomSecurityException(ApiMessages.SALESMAN_NOT_FOUND, HttpStatus.NOT_FOUND));
-        return modelMapper.map(salesmanDetails, SalesmanDetailsDTO.class);
+        SalesmanDetails existing = repo.findByUserId(userId)
+                .orElseThrow(() -> new CustomSecurityException(
+                        ApiMessages.SALESMAN_NOT_FOUND + userId, HttpStatus.NOT_FOUND));
+
+        repo.delete(existing);
     }
 
     @Override
-    public SalesmanDetailsDTO updateSalesmanDetailsByUsername(String username, SalesmanDetailsDTO salesmanDetailsDTO) {
-        if (Objects.isNull(username) || username.isEmpty() || Objects.isNull(salesmanDetailsDTO)) {
-            throw new CustomSecurityException(ApiMessages.INVALID_INPUT_DATA, HttpStatus.BAD_REQUEST);
+    @Transactional(readOnly = true)
+    public SalesmanDetailsResponseDTO getSalesmanDetailsByUsername(String username) {
+        if (username == null || username.isBlank()) {
+            throw new CustomSecurityException(
+                    ApiMessages.INVALID_USERNAME, HttpStatus.BAD_REQUEST);
         }
 
-        SalesmanDetails existingSalesman = salesmanDetailsRepository.findByUserUsername(username)
-                .orElseThrow(() -> new CustomSecurityException(ApiMessages.SALESMAN_NOT_FOUND, HttpStatus.NOT_FOUND));
+        SalesmanDetails entity = repo.findByUserUsername(username)
+                .orElseThrow(() -> new CustomSecurityException(
+                        ApiMessages.SALESMAN_NOT_FOUND + username, HttpStatus.NOT_FOUND));
 
-        modelMapper.map(salesmanDetailsDTO, existingSalesman);
-        salesmanDetailsRepository.save(existingSalesman);
-
-        return modelMapper.map(existingSalesman, SalesmanDetailsDTO.class);
+        return mapper.toResponseDto(entity);
     }
 
     @Override
-    public void deleteSalesmanDetailsById(Long id) {
-        if (Objects.isNull(id)) {
-            throw new CustomSecurityException(ApiMessages.INVALID_ID, HttpStatus.BAD_REQUEST);
+    @Transactional
+    public SalesmanDetailsResponseDTO updateSalesmanDetailsByUsername(
+            String username, SalesmanDetailsDTO dto) {
+
+        if (username == null || username.isBlank() || dto == null) {
+            throw new CustomSecurityException(
+                    ApiMessages.INVALID_INPUT_DATA, HttpStatus.BAD_REQUEST);
         }
 
-        if (!salesmanDetailsRepository.existsById(id)) {
-            throw new CustomSecurityException(ApiMessages.SALESMAN_NOT_FOUND + id, HttpStatus.NOT_FOUND);
-        }
+        SalesmanDetails existing = repo.findByUserUsername(username)
+                .orElseThrow(() -> new CustomSecurityException(
+                        ApiMessages.SALESMAN_NOT_FOUND + username, HttpStatus.NOT_FOUND));
 
-        salesmanDetailsRepository.deleteById(id);
+        mapper.updateFromDto(dto, existing);
+        SalesmanDetails updated = repo.save(existing);
+        return mapper.toResponseDto(updated);
     }
 }
