@@ -1,68 +1,102 @@
-
-// Customer Service Implementation
 package com.crm.springbootjwtimplementation.service.implementation;
 
-import com.crm.springbootjwtimplementation.domain.Customer;
 import com.crm.springbootjwtimplementation.domain.dto.CustomerDTO;
 import com.crm.springbootjwtimplementation.exceptions.security.CustomSecurityException;
+import com.crm.springbootjwtimplementation.mapper.CustomerMapper;
 import com.crm.springbootjwtimplementation.repository.CustomerRepository;
 import com.crm.springbootjwtimplementation.service.CustomerService;
+import com.crm.springbootjwtimplementation.util.Constants.ApiMessages;
 
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
 
-    @Autowired
-    private CustomerRepository repository;
+    private final CustomerRepository repository;
+    private final CustomerMapper     mapper;
 
-    @Autowired
-    private ModelMapper modelMapper;
+    public CustomerServiceImpl(CustomerRepository repository,
+                               CustomerMapper mapper) {
+        this.repository = repository;
+        this.mapper     = mapper;
+    }
 
     @Override
+    @Transactional
     public CustomerDTO createCustomer(CustomerDTO dto) {
         if (repository.existsByEmail(dto.getEmail())) {
-            throw new CustomSecurityException("Customer already exists with email: " + dto.getEmail(), HttpStatus.BAD_REQUEST);
+            throw new CustomSecurityException(
+                ApiMessages.USER_ALREADY_EXISTS + dto.getEmail(),
+                HttpStatus.BAD_REQUEST);
         }
-        Customer entity = modelMapper.map(dto, Customer.class);
-        entity = repository.save(entity);
-        return modelMapper.map(entity, CustomerDTO.class);
+        var saved = repository.save(mapper.toEntity(dto));
+        return mapper.toDto(saved);
     }
 
     @Override
-    public List<CustomerDTO> getAllCustomers() {
-        return repository.findAll().stream()
-                .map(entity -> modelMapper.map(entity, CustomerDTO.class))
-                .collect(Collectors.toList());
+    @Transactional(readOnly = true)
+    public Page<CustomerDTO> getAllCustomers(int page, int size) {
+        if (page < 0 || size <= 0) {
+            throw new CustomSecurityException(
+                ApiMessages.INVALID_INPUT_DATA,
+                HttpStatus.BAD_REQUEST);
+        }
+        Pageable pg = PageRequest.of(page, size, Sort.by("id").ascending());
+        return repository.findAll(pg)
+                         .map(mapper::toDto);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public CustomerDTO getCustomerById(Long id) {
-        Customer entity = repository.findById(id)
-                .orElseThrow(() -> new CustomSecurityException("Customer not found with ID: " + id, HttpStatus.NOT_FOUND));
-        return modelMapper.map(entity, CustomerDTO.class);
+        var entity = repository.findById(id)
+            .orElseThrow(() -> new CustomSecurityException(
+                "Customer not found with ID: " + id,
+                HttpStatus.NOT_FOUND));
+        return mapper.toDto(entity);
     }
 
     @Override
+    @Transactional
     public CustomerDTO updateCustomerById(Long id, CustomerDTO dto) {
-        Customer entity = repository.findById(id)
-                .orElseThrow(() -> new CustomSecurityException("Customer not found with ID: " + id, HttpStatus.NOT_FOUND));
-        modelMapper.map(dto, entity);
-        Customer updatedEntity = repository.save(entity);
-        return modelMapper.map(updatedEntity, CustomerDTO.class);
+        var existing = repository.findById(id)
+            .orElseThrow(() -> new CustomSecurityException(
+                "Customer not found with ID: " + id,
+                HttpStatus.NOT_FOUND));
+        // copy non-null properties; you can add an updateFromDto() in the mapper
+        mapper.updateFromDto(dto,existing);
+    var updated = repository.save(existing);
+        return mapper.toDto(updated);
     }
 
     @Override
+    @Transactional
     public void deleteCustomerById(Long id) {
         if (!repository.existsById(id)) {
-            throw new CustomSecurityException("Customer not found with ID: " + id, HttpStatus.NOT_FOUND);
+            throw new CustomSecurityException(
+                "Customer not found with ID: " + id,
+                HttpStatus.NOT_FOUND);
         }
         repository.deleteById(id);
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Page<CustomerDTO> searchCustomers(String filter, int page, int size) {
+        if (page < 0 || size <= 0) {
+            throw new CustomSecurityException(
+                ApiMessages.INVALID_INPUT_DATA,
+                HttpStatus.BAD_REQUEST);
+        }
+        Pageable pg = PageRequest.of(page, size, Sort.by("customerName").ascending());
+        return repository
+            .findByCustomerNameContainingIgnoreCaseOrBuyerCompanyNameContainingIgnoreCase(
+                filter, filter, pg
+            )
+            .map(mapper::toDto);
+    }
+
 }

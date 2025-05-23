@@ -6,7 +6,6 @@ import com.crm.springbootjwtimplementation.domain.dto.users.TokenResponseDTO;
 import com.crm.springbootjwtimplementation.domain.dto.ResponseMessageDTO;
 import com.crm.springbootjwtimplementation.service.AuthService;
 import com.crm.springbootjwtimplementation.service.LogisticPersonDetailsService;
-import com.crm.springbootjwtimplementation.util.Constants.ApiMessages;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
