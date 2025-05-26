@@ -1,7 +1,9 @@
 package com.crm.springbootjwtimplementation.service;
 
-import com.crm.springbootjwtimplementation.domain.dto.ProductVariantDTO;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.crm.springbootjwtimplementation.domain.dto.product.ProductVariantDTO;
+
 import java.util.List;
 
 public interface ProductVariantService {

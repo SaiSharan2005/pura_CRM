@@ -1,158 +1,195 @@
 package com.crm.springbootjwtimplementation.service.implementation;
 
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.crm.springbootjwtimplementation.domain.Product;
-import com.crm.springbootjwtimplementation.domain.ProductVariant;
-import com.crm.springbootjwtimplementation.domain.ProductVariantImage;
-import com.crm.springbootjwtimplementation.domain.User;
-import com.crm.springbootjwtimplementation.domain.dto.ProductDTO;
-import com.crm.springbootjwtimplementation.domain.dto.ProductVariantDTO;
+import com.crm.springbootjwtimplementation.domain.dto.product.ProductDTO;
+import com.crm.springbootjwtimplementation.domain.dto.product.ProductSummaryDTO;
 import com.crm.springbootjwtimplementation.exceptions.security.CustomSecurityException;
+import com.crm.springbootjwtimplementation.mapper.ProductMapper;
 import com.crm.springbootjwtimplementation.repository.ProductRepository;
 import com.crm.springbootjwtimplementation.repository.ProductVariantRepository;
 import com.crm.springbootjwtimplementation.repository.UserRepository;
-import com.crm.springbootjwtimplementation.service.ProductService;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import com.crm.springbootjwtimplementation.util.Constants.ApiMessages;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import com.cloudinary.Cloudinary;
-import com.cloudinary.utils.ObjectUtils;
 
 @Service
-public class ProductServiceImpl implements ProductService {
+@RequiredArgsConstructor
+public class ProductServiceImpl implements com.crm.springbootjwtimplementation.service.ProductService {
 
-    @Autowired
-    private ProductRepository productRepository;
-
-    @Autowired
-    private ProductVariantRepository productVariantRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private ModelMapper modelMapper;    
-    
-    @Autowired
-    private Cloudinary cloudinary;
+    private final ProductRepository productRepo;
+    private final ProductVariantRepository variantRepo;
+    private final UserRepository userRepo;
+    private final ProductMapper mapper;
+    private final CloudinaryImageUploadService imageService;
 
     @Override
-    public ProductDTO createProduct(Long userId, ProductDTO productDTO) {
-        // Check each variant's SKU for uniqueness.
-        if (productDTO.getVariants() != null) {
-            for (ProductVariantDTO variantDTO : productDTO.getVariants()) {
-                if (productVariantRepository.existsBySku(variantDTO.getSku())) {
+    @Transactional
+    public ProductDTO createProduct(Long userId, ProductDTO dto,
+            MultipartFile thumbnail) {
+        // 1) ensure each SKU is unique
+        if (dto.getVariants() != null) {
+            dto.getVariants().forEach(v -> {
+                if (variantRepo.existsBySku(v.getSku())) {
                     throw new CustomSecurityException(
-                            "Product variant with SKU " + variantDTO.getSku() + " already exists",
+                            "Variant SKU already exists: " + v.getSku(),
                             HttpStatus.CONFLICT);
                 }
-            }
+            });
         }
-        // Retrieve user.
-        User user = userRepository.findById(userId)
-                .orElseThrow(
-                        () -> new CustomSecurityException("User not found with ID: " + userId, HttpStatus.NOT_FOUND));
 
-        // Map DTO to entity.
-        Product product = modelMapper.map(productDTO, Product.class);
-        product.setCreatedDate(LocalDate.now());
+        // 2) verify user exists
+        userRepo.findById(userId)
+                .orElseThrow(() -> new CustomSecurityException(
+                        ApiMessages.USER_NOT_FOUND + userId,
+                        HttpStatus.NOT_FOUND));
 
-        // Optionally set additional properties on product (e.g., user association) if
-        // needed.
-        // Ensure each variant references its parent product.
-        if (product.getVariants() != null) {
-            for (ProductVariant variant : product.getVariants()) {
-                variant.setProduct(product);
-            }
+        // 3) map + set creation date
+        var entity = mapper.toEntity(dto);
+        entity.setCreatedDate(LocalDate.now());
+        if (thumbnail != null && !thumbnail.isEmpty()) {
+            entity.setThumbnailUrl(imageService.upload(thumbnail));
         }
-        product = productRepository.save(product);
-        return modelMapper.map(product, ProductDTO.class);
+        // 4) ensure bi-directional link
+        if (entity.getVariants() != null) {
+            entity.getVariants().forEach(variant -> variant.setProduct(entity));
+        }
+
+        // 5) save + return DTO
+        var saved = productRepo.save(entity);
+        return mapper.toDto(saved);
     }
 
     @Override
-    public List<ProductDTO> getAllProducts() {
-        List<Product> products = productRepository.findAll();
-        return products.stream().map(product -> {
-            ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
-            if (product.getVariants() != null) {
-                productDTO.setVariants(
-                        product.getVariants().stream().map(variant -> {
-                            ProductVariantDTO variantDTO = modelMapper.map(variant, ProductVariantDTO.class);
-                            if (variant.getImages() != null) {
-                                variantDTO.setImageUrls(
-                                        variant.getImages().stream()
-                                                .map(ProductVariantImage::getImageUrl)
-                                                .collect(Collectors.toList()));
-                            }
-                            return variantDTO;
-                        }).collect(Collectors.toList()));
-            }
-            return productDTO;
-        }).collect(Collectors.toList());
+    @Transactional(readOnly = true)
+    public Page<ProductDTO> listProducts(Pageable pageable) {
+        if (pageable.getPageSize() <= 0 || pageable.getPageNumber() < 0) {
+            throw new CustomSecurityException(
+                    ApiMessages.INVALID_INPUT_DATA,
+                    HttpStatus.BAD_REQUEST);
+        }
+        return productRepo.findAll(pageable)
+                .map(mapper::toDto);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductDTO getProductById(Long id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(
-                        () -> new CustomSecurityException("Product not found with ID: " + id, HttpStatus.NOT_FOUND));
-        ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
-        if (product.getVariants() != null) {
-            productDTO.setVariants(
-                    product.getVariants().stream().map(variant -> {
-                        ProductVariantDTO variantDTO = modelMapper.map(variant, ProductVariantDTO.class);
-                        if (variant.getImages() != null) {
-                            variantDTO.setImageUrls(
-                                    variant.getImages().stream()
-                                            .map(ProductVariantImage::getImageUrl)
-                                            .collect(Collectors.toList()));
-                        }
-                        return variantDTO;
-                    }).collect(Collectors.toList()));
-        }
-        return productDTO;
+        var product = productRepo.findById(id)
+                .orElseThrow(() -> new CustomSecurityException(
+                        "Product not found with ID: " + id,
+                        HttpStatus.NOT_FOUND));
+        return mapper.toDto(product);
     }
 
     @Override
-    public ProductDTO updateProductDetails(Long id, ProductDTO productDTO) {
-        Product existingProduct = productRepository.findById(id)
-                .orElseThrow(() -> new CustomSecurityException("Product not found with ID: " + id, HttpStatus.NOT_FOUND));
-    
-        BeanUtils.copyProperties(productDTO, existingProduct, getNullPropertyNames(productDTO));
-    
-        Product updatedProduct = productRepository.save(existingProduct);
-        return modelMapper.map(updatedProduct, ProductDTO.class);
-    }
-    
-    private String[] getNullPropertyNames(Object source) {
-        final BeanWrapper src = new BeanWrapperImpl(source);
-        Set<String> emptyNames = new HashSet<>();
-        for (java.beans.PropertyDescriptor descriptor : src.getPropertyDescriptors()) {
-            Object value = src.getPropertyValue(descriptor.getName());
-            if (value == null) {
-                emptyNames.add(descriptor.getName());
+    @Transactional
+    public ProductDTO updateProduct(Long id,
+            ProductDTO dto,
+            MultipartFile thumbnail) {
+        // 1) load existing
+        Product existing = productRepo.findById(id)
+                .orElseThrow(() -> new CustomSecurityException(
+                        ApiMessages.PRODUCT_NOT_FOUND + id,
+                        HttpStatus.NOT_FOUND));
+
+        // 2) apply any non-null fields from DTO
+        mapper.updateFromDto(dto, existing);
+
+        // 3) if a new thumbnail is provided, upload & set it;
+        // if explicitly null (empty), clear it
+        if (thumbnail != null) {
+            if (!thumbnail.isEmpty()) {
+                String url = imageService.upload(thumbnail);
+                existing.setThumbnailUrl(url);
+            } else {
+                // user wants to remove thumbnail
+                existing.setThumbnailUrl(null);
             }
         }
-        return emptyNames.toArray(new String[0]);
+
+        // 4) persist & return
+        Product saved = productRepo.save(existing);
+        return mapper.toDto(saved);
+    }
+  @Override
+  @Transactional
+  public ProductDTO updateThumbnail(Long id, MultipartFile thumbnail) {
+    if (thumbnail == null || thumbnail.isEmpty()) {
+      throw new CustomSecurityException(
+        ApiMessages.INVALID_INPUT_DATA, HttpStatus.BAD_REQUEST);
+    }
+
+    Product existing = productRepo.findById(id)
+      .orElseThrow(() -> new CustomSecurityException(
+        ApiMessages.PRODUCT_NOT_FOUND + id,
+        HttpStatus.NOT_FOUND));
+
+    // Upload and set new thumbnail URL
+    String url = imageService.upload(thumbnail);
+    existing.setThumbnailUrl(url);
+
+    Product saved = productRepo.save(existing);
+    return mapper.toDto(saved);
+  }
+
+
+    @Override
+    @Transactional
+    public void deleteProduct(Long id) {
+        if (!productRepo.existsById(id)) {
+            throw new CustomSecurityException(
+                    "Product not found with ID: " + id,
+                    HttpStatus.NOT_FOUND);
+        }
+        productRepo.deleteById(id);
     }
 
     @Override
-    public void deleteProduct(Long id) {
-        if (!productRepository.existsById(id)) {
-            throw new CustomSecurityException("Product not found with ID: " + id, HttpStatus.NOT_FOUND);
+    @Transactional(readOnly = true)
+    public Page<ProductDTO> searchProducts(String name, Pageable pageable) {
+        if (name == null || name.isBlank()) {
+            throw new CustomSecurityException(
+                    ApiMessages.INVALID_INPUT_DATA,
+                    HttpStatus.BAD_REQUEST);
         }
-        productRepository.deleteById(id);
+        if (pageable.getPageSize() <= 0 || pageable.getPageNumber() < 0) {
+            throw new CustomSecurityException(
+                    ApiMessages.INVALID_INPUT_DATA,
+                    HttpStatus.BAD_REQUEST);
+        }
+        return productRepo
+                .findByProductNameContainingIgnoreCase(name, pageable)
+                .map(mapper::toDto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProductSummaryDTO> listSummaries(Pageable pageable) {
+        if (pageable.getPageSize() <= 0 || pageable.getPageNumber() < 0) {
+            throw new CustomSecurityException(
+                    ApiMessages.INVALID_INPUT_DATA, HttpStatus.BAD_REQUEST);
+        }
+        return productRepo.findAll(pageable)
+                .map(mapper::toSummaryDto);
+    }
+
+    @Override
+    @Transactional
+    public void setActive(Long id, boolean active) {
+        Product product = productRepo.findById(id)
+                .orElseThrow(() -> new CustomSecurityException(
+                        ApiMessages.INVALID_ID + id, HttpStatus.NOT_FOUND));
+        product.setProductStatus(active ? "ACTIVE" : "INACTIVE");
+        Product saved = productRepo.save(product);
+        // return mapper.toDto(saved);
     }
 }

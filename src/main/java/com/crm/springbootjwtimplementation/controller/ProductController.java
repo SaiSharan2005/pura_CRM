@@ -1,117 +1,204 @@
 package com.crm.springbootjwtimplementation.controller;
 
-import com.crm.springbootjwtimplementation.domain.dto.ProductDTO;
-import com.crm.springbootjwtimplementation.domain.dto.ProductVariantDTO;
+import com.crm.springbootjwtimplementation.domain.dto.ResponseMessageDTO;
+import com.crm.springbootjwtimplementation.domain.dto.product.ProductDTO;
+import com.crm.springbootjwtimplementation.domain.dto.product.ProductSummaryDTO;
+import com.crm.springbootjwtimplementation.domain.dto.product.ProductVariantDTO;
 import com.crm.springbootjwtimplementation.domain.dto.users.TokenResponseDTO;
 import com.crm.springbootjwtimplementation.service.AuthService;
 import com.crm.springbootjwtimplementation.service.ProductService;
 import com.crm.springbootjwtimplementation.service.ProductVariantService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.*;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.http.MediaType;
 
+import javax.validation.Valid;
 import java.io.IOException;
 import java.util.List;
-import java.util.Arrays;
-import java.util.Collections;
 
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
 
-    @Autowired
-    private ProductService productService;
+    private final ProductService productService;
+    private final ProductVariantService variantService;
+    private final AuthService authService;
+    private final ObjectMapper objectMapper;
 
     @Autowired
-    private ProductVariantService productVariantService;
-
-    @Autowired
-    private AuthService authService;
-
-    @PostMapping("/create")
-    public ResponseEntity<ProductDTO> createProduct(@RequestBody ProductDTO productDTO) {
-        TokenResponseDTO userToken = authService.getAuthenticatedUser();
-        return ResponseEntity.ok(productService.createProduct(userToken.getId(), productDTO));
+    public ProductController(
+            ProductService productService,
+            ProductVariantService variantService,
+            AuthService authService,
+            ObjectMapper objectMapper) {
+        this.productService = productService;
+        this.variantService = variantService;
+        this.authService = authService;
+        this.objectMapper = objectMapper;
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<List<ProductDTO>> getAllProducts() {
-        return ResponseEntity.ok(productService.getAllProducts());
+    /**
+     * POST {{baseUrl}}/api/products
+     * Create a new product for the authenticated user.
+     */
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ProductDTO> createProduct(
+            @RequestPart("product") String productJson,
+            @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnail) throws IOException {
+        ProductDTO dto = objectMapper.readValue(productJson, ProductDTO.class);
+
+        TokenResponseDTO me = authService.getAuthenticatedUser();
+        ProductDTO created = productService.createProduct(me.getId(), dto, thumbnail);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(created);
     }
 
+    /**
+     * GET {{baseUrl}}/api/products?page=0&size=20
+     * List all products, paged.
+     */
+    @GetMapping
+    public ResponseEntity<Page<ProductDTO>> listProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+        Page<ProductDTO> results = productService.listProducts(pageable);
+        return ResponseEntity.ok(results);
+    }
+
+    /**
+     * GET {{baseUrl}}/api/products/{id}
+     * Fetch one product by ID.
+     */
     @GetMapping("/{id}")
     public ResponseEntity<ProductDTO> getProductById(@PathVariable Long id) {
-        return ResponseEntity.ok(productService.getProductById(id));
+        ProductDTO dto = productService.getProductById(id);
+        return ResponseEntity.ok(dto);
     }
 
-    @PutMapping(value = "/{id}/details", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ProductDTO> updateProductDetails(
+    /**
+     * PUT {{baseUrl}}/api/products/{id}
+     * Update a product.
+     */
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ProductDTO> updateProduct(
             @PathVariable Long id,
-            @RequestBody ProductDTO productDTO) {
-        ProductDTO updatedProduct = productService.updateProductDetails(id, productDTO);
-        return ResponseEntity.ok(updatedProduct);
+            @RequestPart("product") String productJson,
+            @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnail) throws IOException {
+        ProductDTO dto = objectMapper.readValue(productJson, ProductDTO.class);
+        ProductDTO updated = productService.updateProduct(id, dto, thumbnail);
+        return ResponseEntity.ok(updated);
     }
 
-    @PutMapping(value = "/variants/{variantId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ProductVariantDTO> updateVariant(
-            @PathVariable Long variantId,
-            @RequestPart("variant") String variantJson,
-            @RequestPart(value = "images", required = false) MultipartFile[] images) {
-        try {
-            System.out.println("Received variant JSON: " + variantJson);
-            System.out.println("Received " + (images != null ? images.length : 0) + " images");
-    
-            ObjectMapper mapper = new ObjectMapper();
-            ProductVariantDTO variantDTO = mapper.readValue(variantJson, ProductVariantDTO.class);
-    
-            ProductVariantDTO updatedVariant = productVariantService.updateVariant(variantId, variantDTO, images);
-            return ResponseEntity.ok(updatedVariant);
-        } catch (IOException e) {
-            throw new RuntimeException("Error parsing variant JSON", e);
-        }
-    }
-        
-
+    /**
+     * DELETE {{baseUrl}}/api/products/{id}
+     * Delete a product.
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{variantId}/variants")
-    public ResponseEntity<Void> deleteVariant(@PathVariable Long variantId) {
-        productVariantService.deleteVariant(variantId);
-        return ResponseEntity.noContent().build();
+    /**
+     * GET {{baseUrl}}/api/products/search?q=foo&page=0&size=10
+     * Search products by name (paged).
+     */
+    @GetMapping("/search")
+    public ResponseEntity<Page<ProductDTO>> searchProducts(
+            @RequestParam("q") String q,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+        Page<ProductDTO> results = productService.searchProducts(q, pageable);
+        return ResponseEntity.ok(results);
     }
 
+    //
+    // -- VARIANTS ENDPOINTS --
+    //
 
-
+    /**
+     * POST {{baseUrl}}/api/products/{productId}/variants
+     * Create a new variant (with optional images).
+     */
     @PostMapping(value = "/{productId}/variants", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProductVariantDTO> addVariant(
             @PathVariable Long productId,
             @RequestPart("variant") String variantJson,
-            @RequestPart(value = "images", required = false) MultipartFile[] images) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            ProductVariantDTO variantDTO = mapper.readValue(variantJson, ProductVariantDTO.class);
-            
-            // Log the number of received files
-            System.out.println("Received " + (images != null ? images.length : 0) + " images");
-            
-            // Convert array to list for the service call
-            List<MultipartFile> imageList = images != null ? java.util.Arrays.asList(images) : java.util.Collections.emptyList();
-            ProductVariantDTO createdVariant = productVariantService.addVariant(productId, variantDTO, imageList);
-            return ResponseEntity.ok(createdVariant);
-        } catch (IOException e) {
-            throw new RuntimeException("Error parsing variant JSON", e);
-        }
+            @RequestPart(value = "images", required = false) MultipartFile[] images) throws IOException {
+        ProductVariantDTO dto = objectMapper.readValue(variantJson, ProductVariantDTO.class);
+        List<MultipartFile> pics = (images != null ? List.of(images) : List.of());
+        ProductVariantDTO created = variantService.addVariant(productId, dto, pics);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
-    
-    
-    
+
+    /**
+     * PUT {{baseUrl}}/api/products/variants/{variantId}
+     * Update a variant (with optional new images).
+     */
+    @PutMapping(value = "/variants/{variantId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ProductVariantDTO> updateVariant(
+            @PathVariable Long variantId,
+            @RequestPart("variant") String variantJson,
+            @RequestPart(value = "images", required = false) MultipartFile[] images) throws IOException {
+        ProductVariantDTO dto = objectMapper.readValue(variantJson, ProductVariantDTO.class);
+        // List<MultipartFile> pics = (images != null ? List.of(images) : List.of());
+        ProductVariantDTO updated = variantService.updateVariant(variantId, dto, images);
+        return ResponseEntity.ok(updated);
+    }
+
+    /**
+     * DELETE {{baseUrl}}/api/products/variants/{variantId}
+     * Delete a variant by ID.
+     */
+    @DeleteMapping("/variants/{variantId}")
+    public ResponseEntity<Void> deleteVariant(@PathVariable Long variantId) {
+        variantService.deleteVariant(variantId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/active")
+    public ResponseEntity<ResponseMessageDTO> activate(
+            @PathVariable Long id,
+            @RequestParam("flag") boolean flag) {
+        productService.setActive(id, flag);
+
+        ResponseMessageDTO response = new ResponseMessageDTO();
+        if (flag) {
+            response.setMessage("Succesfully Activated the product ");
+
+        } else {
+            response.setMessage("Succesfully Deactivated the product ");
+
+        }
+        response.setSuccess(true);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/summaries")
+    public ResponseEntity<Page<ProductSummaryDTO>> listSummaries(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+        Page<ProductSummaryDTO> summaries = productService.listSummaries(pageable);
+
+        return ResponseEntity.ok(summaries);
+    }
+
+      @PutMapping(value = "/{id}/thumbnail", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<ProductDTO> updateThumbnail(
+      @PathVariable Long id,
+      @RequestPart("thumbnail") MultipartFile thumbnail) {
+
+    ProductDTO updated = productService.updateThumbnail(id, thumbnail);
+    return ResponseEntity.ok(updated);
+  }
+
 }

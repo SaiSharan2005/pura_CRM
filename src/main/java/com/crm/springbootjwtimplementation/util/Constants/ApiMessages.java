@@ -27,5 +27,10 @@ public class ApiMessages {
 
     public static final String LOGISTIC_PERSON_EXISTS = "Logistic person details already exist for user: ";
     public static final String LOGISTIC_PERSON_NOT_FOUND = "Logistic person not found for user ID: ";
+    // inside ApiMessages.java
+    public static final String VARIANT_SKU_EXISTS       = "Product variant with SKU already exists: ";
+    public static final String PRODUCT_NOT_FOUND        = "Product not found with ID: ";
+    public static final String VARIANT_NOT_FOUND        = "Product variant not found with ID: ";
+    public static final String IMAGE_UPLOAD_FAILED      = "Image upload failed";
 
 }

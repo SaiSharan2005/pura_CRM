@@ -1,14 +1,30 @@
 package com.crm.springbootjwtimplementation.service;
 
-import com.crm.springbootjwtimplementation.domain.dto.ProductDTO;
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.crm.springbootjwtimplementation.domain.dto.product.ProductDTO;
+import com.crm.springbootjwtimplementation.domain.dto.product.ProductSummaryDTO;
+
 public interface ProductService {
-    ProductDTO createProduct(Long userId, ProductDTO productDTO);
-    List<ProductDTO> getAllProducts();
+    ProductDTO createProduct(Long userId, ProductDTO dto, MultipartFile thumbnail);
+
+    Page<ProductDTO> listProducts(Pageable pageable);
+
     ProductDTO getProductById(Long id);
-    ProductDTO updateProductDetails(Long id, ProductDTO productDTO);
+
+    ProductDTO updateProduct(Long id, ProductDTO dto, MultipartFile thumbnail);
+
     void deleteProduct(Long id);
+
+    // extra
+    Page<ProductDTO> searchProducts(String name, Pageable pageable);
+
+    Page<ProductSummaryDTO> listSummaries(Pageable pageable);
+
+    void setActive(Long id, boolean active);
+
+    ProductDTO updateThumbnail(Long id, MultipartFile thumbnail);
+
 }

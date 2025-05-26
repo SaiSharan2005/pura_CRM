@@ -8,7 +8,8 @@ import com.crm.springbootjwtimplementation.domain.ProductVariantImage;
 import com.crm.springbootjwtimplementation.domain.User;
 import com.crm.springbootjwtimplementation.domain.dto.CartDTO;
 import com.crm.springbootjwtimplementation.domain.dto.CartItemDTO;
-import com.crm.springbootjwtimplementation.domain.dto.ProductVariantDTO;
+import com.crm.springbootjwtimplementation.domain.dto.product.ProductVariantDTO;
+import com.crm.springbootjwtimplementation.domain.dto.product.ProductVariantImageDTO;
 import com.crm.springbootjwtimplementation.repository.CartItemRepository;
 import com.crm.springbootjwtimplementation.repository.CartRepository;
 import com.crm.springbootjwtimplementation.repository.ProductRepository;
@@ -118,12 +119,16 @@ private ProductVariantDTO mapToProductVariantDTO(ProductVariant variant) {
     dto.setUpdatedDate(variant.getUpdatedDate());
     dto.setProductId(variant.getProduct().getId());
     // Map image URLs from the variant's images list.
-    dto.setImageUrls(
-        variant.getImages()
-               .stream()
-               .map(ProductVariantImage::getImageUrl)
-               .collect(Collectors.toList())
-    );
+    List<ProductVariantImageDTO> images = variant.getImages().stream()
+        .map(img -> {
+            ProductVariantImageDTO imgDto = new ProductVariantImageDTO();
+            imgDto.setId(img.getId());
+            imgDto.setImageUrl(img.getImageUrl());
+            return imgDto;
+        })
+        .collect(Collectors.toList());
+
+    dto.setImageUrls(images);
     return dto;
 }
 
