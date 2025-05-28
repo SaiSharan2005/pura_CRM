@@ -5,6 +5,7 @@ import lombok.Data;
 import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -33,5 +34,5 @@ public class ProductVariantDTO {
     private Long productId;
 
     // flattened image URLs
-    private List<ProductVariantImageDTO> imageUrls;
+    private List<ProductVariantImageDTO> imageUrls = new ArrayList<>();
 }

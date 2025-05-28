@@ -138,16 +138,34 @@ public class ProductVariantServiceImpl implements ProductVariantService {
         }
         return out;
     }
-
-    @Override
-    @Transactional
-    public boolean deleteVariant(Long id) {
-        if (!variantRepo.existsById(id)) {
-            throw new CustomSecurityException(
-                    ApiMessages.VARIANT_NOT_FOUND + id,
-                    HttpStatus.NOT_FOUND);
-        }
-        variantRepo.deleteById(id);
-        return true;
+@Override
+@Transactional
+public boolean deleteVariant(Long id) {
+    if (!variantRepo.existsById(id)) {
+        throw new CustomSecurityException(
+            ApiMessages.VARIANT_NOT_FOUND + id,
+            HttpStatus.NOT_FOUND
+        );
     }
+
+    try {
+        // 1) Delete the row
+        variantRepo.deleteById(id);
+        // 2) Force Hibernate/JPA to execute the SQL now
+        variantRepo.flush();
+
+        return true;
+    } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+        // FK constraint failed (e.g. cart_item → product_variant)
+        throw new CustomSecurityException(
+            "Failed to delete variant; it’s still referenced by other records.",
+            HttpStatus.CONFLICT
+        );
+    } catch (Exception ex) {
+        throw new CustomSecurityException(
+            "Failed to delete variant: " + ex.getMessage(),
+            HttpStatus.INTERNAL_SERVER_ERROR
+        );
+    }
+}
 }

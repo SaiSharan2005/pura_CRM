@@ -5,6 +5,7 @@ import com.crm.springbootjwtimplementation.domain.dto.product.ProductDTO;
 import com.crm.springbootjwtimplementation.domain.dto.product.ProductSummaryDTO;
 import com.crm.springbootjwtimplementation.domain.dto.product.ProductVariantDTO;
 import com.crm.springbootjwtimplementation.domain.dto.users.TokenResponseDTO;
+import com.crm.springbootjwtimplementation.exceptions.security.CustomSecurityException;
 import com.crm.springbootjwtimplementation.service.AuthService;
 import com.crm.springbootjwtimplementation.service.ProductService;
 import com.crm.springbootjwtimplementation.service.ProductVariantService;
@@ -99,11 +100,23 @@ public class ProductController {
      * DELETE {{baseUrl}}/api/products/{id}
      * Delete a product.
      */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+@DeleteMapping("/{id}")
+public ResponseEntity<ResponseMessageDTO> deleteProduct(@PathVariable Long id) {
+    ResponseMessageDTO response = new ResponseMessageDTO();
+    try {
         productService.deleteProduct(id);
+        response.setSuccess(true);
+        response.setMessage("Product deleted successfully");
         return ResponseEntity.noContent().build();
+    } catch (CustomSecurityException ex) {
+        response.setSuccess(false);
+        response.setMessage(ex.getMessage());
+        HttpStatus status = ex.getHttpStatus() != null
+            ? ex.getHttpStatus()
+            : HttpStatus.CONFLICT;
+        return ResponseEntity.status(status).body(response);
     }
+}
 
     /**
      * GET {{baseUrl}}/api/products/search?q=foo&page=0&size=10
@@ -158,9 +171,27 @@ public class ProductController {
      * Delete a variant by ID.
      */
     @DeleteMapping("/variants/{variantId}")
-    public ResponseEntity<Void> deleteVariant(@PathVariable Long variantId) {
-        variantService.deleteVariant(variantId);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<ResponseMessageDTO> deleteVariant(@PathVariable Long variantId) {
+        ResponseMessageDTO response = new ResponseMessageDTO();
+        try {
+            boolean deleted = variantService.deleteVariant(variantId);
+            if (deleted) {
+                response.setSuccess(true);
+                response.setMessage("Variant deleted successfully");
+                return ResponseEntity.ok(response);
+            } else {
+                // Shouldn't really happen since we throw on failure, but just in case:
+                response.setSuccess(false);
+                response.setMessage("Failed to delete variant");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            }
+        } catch (CustomSecurityException ex) {
+            // Build a failure response using the exception's status and message
+            response.setSuccess(false);
+            response.setMessage(ex.getMessage());
+            HttpStatus status = ex.getHttpStatus() != null ? ex.getHttpStatus() : HttpStatus.CONFLICT;
+            return ResponseEntity.status(status).body(response);
+        }
     }
 
     @PutMapping("/{id}/active")
@@ -192,13 +223,13 @@ public class ProductController {
         return ResponseEntity.ok(summaries);
     }
 
-      @PutMapping(value = "/{id}/thumbnail", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<ProductDTO> updateThumbnail(
-      @PathVariable Long id,
-      @RequestPart("thumbnail") MultipartFile thumbnail) {
+    @PutMapping(value = "/{id}/thumbnail", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ProductDTO> updateThumbnail(
+            @PathVariable Long id,
+            @RequestPart("thumbnail") MultipartFile thumbnail) {
 
-    ProductDTO updated = productService.updateThumbnail(id, thumbnail);
-    return ResponseEntity.ok(updated);
-  }
+        ProductDTO updated = productService.updateThumbnail(id, thumbnail);
+        return ResponseEntity.ok(updated);
+    }
 
 }

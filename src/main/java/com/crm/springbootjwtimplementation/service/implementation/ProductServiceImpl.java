@@ -142,16 +142,35 @@ public class ProductServiceImpl implements com.crm.springbootjwtimplementation.s
   }
 
 
-    @Override
-    @Transactional
-    public void deleteProduct(Long id) {
-        if (!productRepo.existsById(id)) {
-            throw new CustomSecurityException(
-                    "Product not found with ID: " + id,
-                    HttpStatus.NOT_FOUND);
-        }
-        productRepo.deleteById(id);
+   @Override
+@Transactional
+public void deleteProduct(Long id) {
+    if (!productRepo.existsById(id)) {
+        throw new CustomSecurityException(
+            ApiMessages.PRODUCT_NOT_FOUND + id,
+            HttpStatus.NOT_FOUND
+        );
     }
+
+    try {
+        // Schedule delete...
+        productRepo.deleteById(id);
+        // ...then flush immediately to catch FK constraint now:
+        productRepo.flush();
+    } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+        // e.g. orders or cart_items referencing this product
+        throw new CustomSecurityException(
+            "Cannot delete product; it’s still referenced by other records.",
+            HttpStatus.CONFLICT
+        );
+    } catch (Exception ex) {
+        throw new CustomSecurityException(
+            "Failed to delete product: " + ex.getMessage(),
+            HttpStatus.INTERNAL_SERVER_ERROR
+        );
+    }
+}
+
 
     @Override
     @Transactional(readOnly = true)

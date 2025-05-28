@@ -9,14 +9,20 @@ import com.crm.springbootjwtimplementation.domain.dto.product.ProductDTO;
 import com.crm.springbootjwtimplementation.domain.dto.product.ProductSummaryDTO;
 import com.crm.springbootjwtimplementation.domain.dto.product.ProductVariantDTO;
 
-@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+@Mapper(componentModel = "spring", uses = { ProductVariantMapper.class }, // ← add this
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface ProductMapper {
-
-    @Mapping(target = "variants", source = "variants")
+    // @Mapping(source = "id", target = "id")
+    // @Mapping(source = "productName", target = "productName")
+    // @Mapping(source = "description", target = "description")
+    // @Mapping(source = "productStatus", target = "productStatus")
+    // @Mapping(source = "createdDate", target = "createdDate")
+    // @Mapping(source = "thumbnailUrl", target = "thumbnailUrl")
+    @Mapping(source = "variants", target = "variants")
     ProductDTO toDto(Product product);
 
-    @IterableMapping(elementTargetType = ProductVariantDTO.class)
-    List<ProductVariantDTO> variantsToDto(List<ProductVariant> variants);
+    // @IterableMapping(elementTargetType = ProductVariantDTO.class)
+    // List<ProductVariantDTO> variantsToDto(List<ProductVariant> variants);
 
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", ignore = true) // new entities get no ID from DTO
