@@ -1,9 +1,9 @@
 package com.crm.springbootjwtimplementation.controller;
 
-import com.crm.springbootjwtimplementation.domain.dto.ResponseMessageDTO;
-import com.crm.springbootjwtimplementation.domain.dto.users.ManagerDetailsDTO;
-import com.crm.springbootjwtimplementation.domain.dto.users.ManagerDetailsResponseDTO;
-import com.crm.springbootjwtimplementation.domain.dto.users.TokenResponseDTO;
+import com.crm.springbootjwtimplementation.dto.ResponseMessageDTO;
+import com.crm.springbootjwtimplementation.dto.users.ManagerDetailsDTO;
+import com.crm.springbootjwtimplementation.dto.users.ManagerDetailsResponseDTO;
+import com.crm.springbootjwtimplementation.dto.users.TokenResponseDTO;
 import com.crm.springbootjwtimplementation.service.AuthService;
 import com.crm.springbootjwtimplementation.service.ManagerDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;

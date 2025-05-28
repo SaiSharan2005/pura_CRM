@@ -3,7 +3,7 @@ package com.crm.springbootjwtimplementation.service;
 
 import org.springframework.data.domain.Page;
 
-import com.crm.springbootjwtimplementation.domain.dto.users.*;
+import com.crm.springbootjwtimplementation.dto.users.*;
 
 public interface SalesmanDetailsService {
     SalesmanDetailsResponseDTO createSalesmanDetails(Long userId, SalesmanDetailsDTO dto);

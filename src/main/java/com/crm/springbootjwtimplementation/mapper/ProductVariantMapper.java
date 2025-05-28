@@ -4,7 +4,7 @@ package com.crm.springbootjwtimplementation.mapper;
 import java.util.List;
 import org.mapstruct.*;
 import com.crm.springbootjwtimplementation.domain.ProductVariant;
-import com.crm.springbootjwtimplementation.domain.dto.product.ProductVariantDTO;
+import com.crm.springbootjwtimplementation.dto.product.ProductVariantDTO;
 
 @Mapper(
   componentModel = "spring",

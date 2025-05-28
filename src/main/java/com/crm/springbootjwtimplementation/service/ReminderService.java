@@ -2,8 +2,8 @@ package com.crm.springbootjwtimplementation.service;
 
 import java.util.List;
 
-import com.crm.springbootjwtimplementation.domain.dto.ReminderRequestDTO;
-import com.crm.springbootjwtimplementation.domain.dto.ReminderResponseDTO;
+import com.crm.springbootjwtimplementation.dto.ReminderRequestDTO;
+import com.crm.springbootjwtimplementation.dto.ReminderResponseDTO;
 
 public interface ReminderService {
     ReminderResponseDTO createReminder(ReminderRequestDTO reminderRequestDTO, Long userId);

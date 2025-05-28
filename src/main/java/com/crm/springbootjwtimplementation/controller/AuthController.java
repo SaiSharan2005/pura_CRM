@@ -1,6 +1,6 @@
 package com.crm.springbootjwtimplementation.controller;
 
-import com.crm.springbootjwtimplementation.domain.dto.users.*;
+import com.crm.springbootjwtimplementation.dto.users.*;
 import com.crm.springbootjwtimplementation.service.AuthService;
 import com.crm.springbootjwtimplementation.util.Security.AccessToken;
 

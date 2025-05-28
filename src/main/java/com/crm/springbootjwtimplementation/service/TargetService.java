@@ -2,8 +2,8 @@ package com.crm.springbootjwtimplementation.service;
 
 import java.util.List;
 
-import com.crm.springbootjwtimplementation.domain.dto.TargetRequestDTO;
-import com.crm.springbootjwtimplementation.domain.dto.TargetResponseDTO;
+import com.crm.springbootjwtimplementation.dto.TargetRequestDTO;
+import com.crm.springbootjwtimplementation.dto.TargetResponseDTO;
 
 public interface TargetService {
     TargetResponseDTO createTarget(TargetRequestDTO requestDTO, Long managerUserId);

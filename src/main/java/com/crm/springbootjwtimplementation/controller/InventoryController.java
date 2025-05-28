@@ -1,6 +1,6 @@
 package com.crm.springbootjwtimplementation.controller;
 
-import com.crm.springbootjwtimplementation.domain.dto.InventoryDTO;
+import com.crm.springbootjwtimplementation.dto.InventoryDTO;
 import com.crm.springbootjwtimplementation.service.InventoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

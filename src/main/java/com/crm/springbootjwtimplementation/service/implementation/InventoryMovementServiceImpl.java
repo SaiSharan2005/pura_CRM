@@ -3,7 +3,7 @@ package com.crm.springbootjwtimplementation.service.implementation;
 import com.crm.springbootjwtimplementation.domain.InventoryMovement;
 import com.crm.springbootjwtimplementation.domain.ProductVariant;
 import com.crm.springbootjwtimplementation.domain.Warehouse;
-import com.crm.springbootjwtimplementation.domain.dto.InventoryMovementDTO;
+import com.crm.springbootjwtimplementation.dto.InventoryMovementDTO;
 import com.crm.springbootjwtimplementation.exceptions.security.CustomSecurityException;
 import com.crm.springbootjwtimplementation.repository.InventoryMovementRepository;
 import com.crm.springbootjwtimplementation.repository.ProductVariantRepository;

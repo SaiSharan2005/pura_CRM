@@ -2,8 +2,8 @@ package com.crm.springbootjwtimplementation.mapper;
 
 import org.mapstruct.*;
 import com.crm.springbootjwtimplementation.domain.User;
+import com.crm.springbootjwtimplementation.dto.users.*;
 import com.crm.springbootjwtimplementation.domain.Role;
-import com.crm.springbootjwtimplementation.domain.dto.users.*;
 
 import java.util.Set;
 import java.util.stream.Collectors;

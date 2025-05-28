@@ -12,11 +12,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.crm.springbootjwtimplementation.domain.dto.ReminderActiveRequestDTO;
-import com.crm.springbootjwtimplementation.domain.dto.ReminderRequestDTO;
-import com.crm.springbootjwtimplementation.domain.dto.ReminderResponseDTO;
-import com.crm.springbootjwtimplementation.domain.dto.ResponseMessageDTO;
-import com.crm.springbootjwtimplementation.domain.dto.users.TokenResponseDTO;
+import com.crm.springbootjwtimplementation.dto.ReminderActiveRequestDTO;
+import com.crm.springbootjwtimplementation.dto.ReminderRequestDTO;
+import com.crm.springbootjwtimplementation.dto.ReminderResponseDTO;
+import com.crm.springbootjwtimplementation.dto.ResponseMessageDTO;
+import com.crm.springbootjwtimplementation.dto.users.TokenResponseDTO;
 import com.crm.springbootjwtimplementation.service.AuthService;
 import com.crm.springbootjwtimplementation.service.ReminderService;
 

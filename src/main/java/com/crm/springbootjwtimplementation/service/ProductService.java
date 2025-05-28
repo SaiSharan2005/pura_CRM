@@ -4,8 +4,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.crm.springbootjwtimplementation.domain.dto.product.ProductDTO;
-import com.crm.springbootjwtimplementation.domain.dto.product.ProductSummaryDTO;
+import com.crm.springbootjwtimplementation.dto.product.ProductDTO;
+import com.crm.springbootjwtimplementation.dto.product.ProductSummaryDTO;
 
 public interface ProductService {
     ProductDTO createProduct(Long userId, ProductDTO dto, MultipartFile thumbnail);

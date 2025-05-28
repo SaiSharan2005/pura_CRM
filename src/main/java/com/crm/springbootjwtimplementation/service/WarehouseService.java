@@ -1,7 +1,8 @@
 package com.crm.springbootjwtimplementation.service;
 
-import com.crm.springbootjwtimplementation.domain.dto.WarehouseDTO;
 import java.util.List;
+
+import com.crm.springbootjwtimplementation.dto.WarehouseDTO;
 
 public interface WarehouseService {
     WarehouseDTO createWarehouse(WarehouseDTO warehouseDTO);

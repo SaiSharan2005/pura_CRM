@@ -1,10 +1,10 @@
 // package com.crm.springbootjwtimplementation.service;
 package com.crm.springbootjwtimplementation.service;
 
-import com.crm.springbootjwtimplementation.domain.dto.DeliveryRequestDTO;
-import com.crm.springbootjwtimplementation.domain.dto.DeliveryResponseDTO;
-
 import java.util.List;
+
+import com.crm.springbootjwtimplementation.dto.DeliveryRequestDTO;
+import com.crm.springbootjwtimplementation.dto.DeliveryResponseDTO;
 
 public interface DeliveryService {
     DeliveryResponseDTO createDelivery(DeliveryRequestDTO requestDTO);

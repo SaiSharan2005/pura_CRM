@@ -3,7 +3,7 @@ package com.crm.springbootjwtimplementation.service.implementation;
 import com.crm.springbootjwtimplementation.domain.Inventory;
 import com.crm.springbootjwtimplementation.domain.ProductVariant;
 import com.crm.springbootjwtimplementation.domain.Warehouse;
-import com.crm.springbootjwtimplementation.domain.dto.InventoryDTO;
+import com.crm.springbootjwtimplementation.dto.InventoryDTO;
 import com.crm.springbootjwtimplementation.exceptions.security.CustomSecurityException;
 import com.crm.springbootjwtimplementation.repository.InventoryRepository;
 import com.crm.springbootjwtimplementation.repository.ProductVariantRepository;

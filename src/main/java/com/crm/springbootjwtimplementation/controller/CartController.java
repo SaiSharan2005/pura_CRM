@@ -2,9 +2,9 @@ package com.crm.springbootjwtimplementation.controller;
 
 import com.crm.springbootjwtimplementation.domain.Cart;
 import com.crm.springbootjwtimplementation.domain.CartItem;
-import com.crm.springbootjwtimplementation.domain.dto.CartDTO;
-import com.crm.springbootjwtimplementation.domain.dto.CartRequest;
-import com.crm.springbootjwtimplementation.domain.dto.users.TokenResponseDTO;
+import com.crm.springbootjwtimplementation.dto.CartDTO;
+import com.crm.springbootjwtimplementation.dto.CartRequest;
+import com.crm.springbootjwtimplementation.dto.users.TokenResponseDTO;
 import com.crm.springbootjwtimplementation.service.AuthService;
 import com.crm.springbootjwtimplementation.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +34,7 @@ public class CartController {
     public ResponseEntity<Cart> addItemToCart(@RequestBody CartRequest cartRequest) {
 
         Cart cart = cartService.addItemToCart(
+            
             cartRequest.getCartId(), 
             cartRequest.getVariantId(),  // Updated to pass variantId
             cartRequest.getQuantity());

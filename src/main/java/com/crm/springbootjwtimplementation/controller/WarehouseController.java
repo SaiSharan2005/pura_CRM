@@ -1,6 +1,6 @@
 package com.crm.springbootjwtimplementation.controller;
 
-import com.crm.springbootjwtimplementation.domain.dto.WarehouseDTO;
+import com.crm.springbootjwtimplementation.dto.WarehouseDTO;
 import com.crm.springbootjwtimplementation.service.WarehouseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

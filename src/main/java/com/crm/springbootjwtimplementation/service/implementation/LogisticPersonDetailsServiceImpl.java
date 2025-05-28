@@ -8,8 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import com.crm.springbootjwtimplementation.domain.User;
-import com.crm.springbootjwtimplementation.domain.dto.users.LogisticPersonDetailsDTO;
-import com.crm.springbootjwtimplementation.domain.dto.users.LogisticPersonDetailsResponseDTO;
+import com.crm.springbootjwtimplementation.dto.users.LogisticPersonDetailsDTO;
+import com.crm.springbootjwtimplementation.dto.users.LogisticPersonDetailsResponseDTO;
 import com.crm.springbootjwtimplementation.exceptions.security.CustomSecurityException;
 import com.crm.springbootjwtimplementation.mapper.LogisticPersonDetailsMapper;
 import com.crm.springbootjwtimplementation.repository.LogisticPersonDetailsRepository;

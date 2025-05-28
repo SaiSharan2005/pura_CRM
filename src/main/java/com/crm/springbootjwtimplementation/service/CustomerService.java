@@ -1,12 +1,12 @@
 // Customer Service Interface
 package com.crm.springbootjwtimplementation.service;
 
-import com.crm.springbootjwtimplementation.domain.dto.CustomerDTO;
-import com.crm.springbootjwtimplementation.domain.dto.users.LogisticPersonDetailsResponseDTO;
-
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+
+import com.crm.springbootjwtimplementation.dto.CustomerDTO;
+import com.crm.springbootjwtimplementation.dto.users.LogisticPersonDetailsResponseDTO;
 
 public interface CustomerService {
 

@@ -9,8 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.crm.springbootjwtimplementation.domain.Product;
-import com.crm.springbootjwtimplementation.domain.dto.product.ProductDTO;
-import com.crm.springbootjwtimplementation.domain.dto.product.ProductSummaryDTO;
+import com.crm.springbootjwtimplementation.dto.product.ProductDTO;
+import com.crm.springbootjwtimplementation.dto.product.ProductSummaryDTO;
 import com.crm.springbootjwtimplementation.exceptions.security.CustomSecurityException;
 import com.crm.springbootjwtimplementation.mapper.ProductMapper;
 import com.crm.springbootjwtimplementation.repository.ProductRepository;

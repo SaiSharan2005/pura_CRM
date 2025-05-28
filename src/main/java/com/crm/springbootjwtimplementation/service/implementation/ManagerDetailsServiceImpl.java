@@ -11,8 +11,8 @@ import lombok.RequiredArgsConstructor;
 
 import com.crm.springbootjwtimplementation.domain.ManagerDetails;
 import com.crm.springbootjwtimplementation.domain.User;
-import com.crm.springbootjwtimplementation.domain.dto.users.ManagerDetailsDTO;
-import com.crm.springbootjwtimplementation.domain.dto.users.ManagerDetailsResponseDTO;
+import com.crm.springbootjwtimplementation.dto.users.ManagerDetailsDTO;
+import com.crm.springbootjwtimplementation.dto.users.ManagerDetailsResponseDTO;
 import com.crm.springbootjwtimplementation.exceptions.security.CustomSecurityException;
 import com.crm.springbootjwtimplementation.mapper.ManagerDetailsMapper;
 import com.crm.springbootjwtimplementation.repository.ManagerDetailsRepository;

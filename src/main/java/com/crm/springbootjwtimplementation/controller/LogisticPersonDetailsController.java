@@ -1,9 +1,9 @@
 package com.crm.springbootjwtimplementation.controller;
 
-import com.crm.springbootjwtimplementation.domain.dto.users.LogisticPersonDetailsDTO;
-import com.crm.springbootjwtimplementation.domain.dto.users.LogisticPersonDetailsResponseDTO;
-import com.crm.springbootjwtimplementation.domain.dto.users.TokenResponseDTO;
-import com.crm.springbootjwtimplementation.domain.dto.ResponseMessageDTO;
+import com.crm.springbootjwtimplementation.dto.ResponseMessageDTO;
+import com.crm.springbootjwtimplementation.dto.users.LogisticPersonDetailsDTO;
+import com.crm.springbootjwtimplementation.dto.users.LogisticPersonDetailsResponseDTO;
+import com.crm.springbootjwtimplementation.dto.users.TokenResponseDTO;
 import com.crm.springbootjwtimplementation.service.AuthService;
 import com.crm.springbootjwtimplementation.service.LogisticPersonDetailsService;
 

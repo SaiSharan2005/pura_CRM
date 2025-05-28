@@ -1,7 +1,7 @@
 package com.crm.springbootjwtimplementation.controller;
 
-import com.crm.springbootjwtimplementation.domain.dto.CustomerDTO;
-import com.crm.springbootjwtimplementation.domain.dto.ResponseMessageDTO;
+import com.crm.springbootjwtimplementation.dto.CustomerDTO;
+import com.crm.springbootjwtimplementation.dto.ResponseMessageDTO;
 import com.crm.springbootjwtimplementation.service.CustomerService;
 
 import org.springframework.beans.factory.annotation.Autowired;

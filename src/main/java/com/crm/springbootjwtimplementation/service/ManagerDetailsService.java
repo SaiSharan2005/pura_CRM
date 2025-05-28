@@ -1,8 +1,9 @@
 package com.crm.springbootjwtimplementation.service;
 
 import org.springframework.data.domain.Page;
-import com.crm.springbootjwtimplementation.domain.dto.users.ManagerDetailsDTO;
-import com.crm.springbootjwtimplementation.domain.dto.users.ManagerDetailsResponseDTO;
+
+import com.crm.springbootjwtimplementation.dto.users.ManagerDetailsDTO;
+import com.crm.springbootjwtimplementation.dto.users.ManagerDetailsResponseDTO;
 
 public interface ManagerDetailsService {
 

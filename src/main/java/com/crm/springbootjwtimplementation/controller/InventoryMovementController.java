@@ -1,6 +1,6 @@
 package com.crm.springbootjwtimplementation.controller;
 
-import com.crm.springbootjwtimplementation.domain.dto.InventoryMovementDTO;
+import com.crm.springbootjwtimplementation.dto.InventoryMovementDTO;
 import com.crm.springbootjwtimplementation.service.InventoryMovementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

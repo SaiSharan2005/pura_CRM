@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 
 import com.crm.springbootjwtimplementation.domain.SalesmanDetails;
 import com.crm.springbootjwtimplementation.domain.User;
-import com.crm.springbootjwtimplementation.domain.dto.users.*;
+import com.crm.springbootjwtimplementation.dto.users.*;
 import com.crm.springbootjwtimplementation.exceptions.security.CustomSecurityException;
 import com.crm.springbootjwtimplementation.mapper.SalesmanDetailsMapper;
 import com.crm.springbootjwtimplementation.repository.SalesmanDetailsRepository;

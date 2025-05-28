@@ -2,8 +2,8 @@ package com.crm.springbootjwtimplementation.service;
 
 import org.springframework.data.domain.Page;
 
-import com.crm.springbootjwtimplementation.domain.dto.users.LogisticPersonDetailsDTO;
-import com.crm.springbootjwtimplementation.domain.dto.users.LogisticPersonDetailsResponseDTO;
+import com.crm.springbootjwtimplementation.dto.users.LogisticPersonDetailsDTO;
+import com.crm.springbootjwtimplementation.dto.users.LogisticPersonDetailsResponseDTO;
 public interface LogisticPersonDetailsService {
 
   LogisticPersonDetailsDTO create(Long userId,

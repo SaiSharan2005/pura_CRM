@@ -1,8 +1,10 @@
 package com.crm.springbootjwtimplementation.service;
 
+
 import com.crm.springbootjwtimplementation.domain.Cart;
 import com.crm.springbootjwtimplementation.domain.CartItem;
-import com.crm.springbootjwtimplementation.domain.dto.CartDTO;
+import com.crm.springbootjwtimplementation.dto.CartDTO;
+
 import java.util.List;
 
 public interface CartService {

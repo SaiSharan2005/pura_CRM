@@ -1,10 +1,10 @@
 package com.crm.springbootjwtimplementation.service.implementation;
 
-import com.crm.springbootjwtimplementation.domain.dto.DeliveryRequestDTO;
-import com.crm.springbootjwtimplementation.domain.dto.DeliveryResponseDTO;
 import com.crm.springbootjwtimplementation.domain.DealDetails;
 import com.crm.springbootjwtimplementation.domain.Delivery;
 import com.crm.springbootjwtimplementation.domain.LogisticPersonDetails;
+import com.crm.springbootjwtimplementation.dto.DeliveryRequestDTO;
+import com.crm.springbootjwtimplementation.dto.DeliveryResponseDTO;
 import com.crm.springbootjwtimplementation.repository.DealDetailsRepository;
 import com.crm.springbootjwtimplementation.repository.DeliveryRepository;
 import com.crm.springbootjwtimplementation.repository.LogisticPersonDetailsRepository;

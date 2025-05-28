@@ -2,8 +2,8 @@ package com.crm.springbootjwtimplementation.service;
 
 import java.util.List;
 
-import com.crm.springbootjwtimplementation.domain.dto.SalesmanProductTargetRequestDTO;
-import com.crm.springbootjwtimplementation.domain.dto.SalesmanProductTargetResponseDTO;
+import com.crm.springbootjwtimplementation.dto.SalesmanProductTargetRequestDTO;
+import com.crm.springbootjwtimplementation.dto.SalesmanProductTargetResponseDTO;
 
 public interface SalesmanProductTargetService {
     SalesmanProductTargetResponseDTO createSalesmanProductTarget(SalesmanProductTargetRequestDTO dto, Long salesmanUserId);

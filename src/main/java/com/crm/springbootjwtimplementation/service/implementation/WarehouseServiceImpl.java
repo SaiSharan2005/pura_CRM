@@ -1,7 +1,7 @@
 package com.crm.springbootjwtimplementation.service.implementation;
 
 import com.crm.springbootjwtimplementation.domain.Warehouse;
-import com.crm.springbootjwtimplementation.domain.dto.WarehouseDTO;
+import com.crm.springbootjwtimplementation.dto.WarehouseDTO;
 import com.crm.springbootjwtimplementation.exceptions.security.CustomSecurityException;
 import com.crm.springbootjwtimplementation.repository.WarehouseRepository;
 import com.crm.springbootjwtimplementation.service.WarehouseService;

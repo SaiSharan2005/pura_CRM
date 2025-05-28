@@ -1,7 +1,8 @@
 package com.crm.springbootjwtimplementation.service;
 
-import com.crm.springbootjwtimplementation.domain.dto.InventoryMovementDTO;
 import java.util.List;
+
+import com.crm.springbootjwtimplementation.dto.InventoryMovementDTO;
 
 public interface InventoryMovementService {
     InventoryMovementDTO createInventoryMovement(InventoryMovementDTO inventoryMovementDTO);

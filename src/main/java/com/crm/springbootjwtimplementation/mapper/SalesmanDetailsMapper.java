@@ -3,9 +3,9 @@ package com.crm.springbootjwtimplementation.mapper;
 
 import org.mapstruct.*;
 import com.crm.springbootjwtimplementation.domain.SalesmanDetails;
-import com.crm.springbootjwtimplementation.domain.dto.*;
-import com.crm.springbootjwtimplementation.domain.dto.users.SalesmanDetailsDTO;
-import com.crm.springbootjwtimplementation.domain.dto.users.SalesmanDetailsResponseDTO;
+import com.crm.springbootjwtimplementation.dto.*;
+import com.crm.springbootjwtimplementation.dto.users.SalesmanDetailsDTO;
+import com.crm.springbootjwtimplementation.dto.users.SalesmanDetailsResponseDTO;
 
 @Mapper(
   componentModel = "spring",

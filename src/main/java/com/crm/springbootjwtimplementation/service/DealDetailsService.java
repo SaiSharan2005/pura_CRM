@@ -2,8 +2,8 @@
 package com.crm.springbootjwtimplementation.service;
 
 import com.crm.springbootjwtimplementation.domain.DealDetails;
-import com.crm.springbootjwtimplementation.domain.dto.DealDetailsDTO;
-import com.crm.springbootjwtimplementation.domain.dto.DealRequest;
+import com.crm.springbootjwtimplementation.dto.DealDetailsDTO;
+import com.crm.springbootjwtimplementation.dto.DealRequest;
 
 import java.util.List;
 

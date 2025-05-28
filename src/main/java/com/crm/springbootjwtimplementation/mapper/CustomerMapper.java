@@ -2,7 +2,7 @@ package com.crm.springbootjwtimplementation.mapper;
 
 import org.mapstruct.*;
 import com.crm.springbootjwtimplementation.domain.Customer;
-import com.crm.springbootjwtimplementation.domain.dto.CustomerDTO;
+import com.crm.springbootjwtimplementation.dto.CustomerDTO;
 
 @Mapper(
   componentModel = "spring",

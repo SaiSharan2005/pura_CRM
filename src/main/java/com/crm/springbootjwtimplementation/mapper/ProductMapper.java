@@ -5,9 +5,9 @@ import java.util.List;
 import org.mapstruct.*;
 import com.crm.springbootjwtimplementation.domain.Product;
 import com.crm.springbootjwtimplementation.domain.ProductVariant;
-import com.crm.springbootjwtimplementation.domain.dto.product.ProductDTO;
-import com.crm.springbootjwtimplementation.domain.dto.product.ProductSummaryDTO;
-import com.crm.springbootjwtimplementation.domain.dto.product.ProductVariantDTO;
+import com.crm.springbootjwtimplementation.dto.product.ProductDTO;
+import com.crm.springbootjwtimplementation.dto.product.ProductSummaryDTO;
+import com.crm.springbootjwtimplementation.dto.product.ProductVariantDTO;
 
 @Mapper(componentModel = "spring", uses = { ProductVariantMapper.class }, // ← add this
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

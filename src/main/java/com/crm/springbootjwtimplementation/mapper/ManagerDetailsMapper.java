@@ -2,8 +2,8 @@ package com.crm.springbootjwtimplementation.mapper;
 
 import org.mapstruct.*;
 import com.crm.springbootjwtimplementation.domain.ManagerDetails;
-import com.crm.springbootjwtimplementation.domain.dto.users.ManagerDetailsDTO;
-import com.crm.springbootjwtimplementation.domain.dto.users.ManagerDetailsResponseDTO;
+import com.crm.springbootjwtimplementation.dto.users.ManagerDetailsDTO;
+import com.crm.springbootjwtimplementation.dto.users.ManagerDetailsResponseDTO;
 
 @Mapper(componentModel = "spring", uses = UserMapper.class, nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface ManagerDetailsMapper {

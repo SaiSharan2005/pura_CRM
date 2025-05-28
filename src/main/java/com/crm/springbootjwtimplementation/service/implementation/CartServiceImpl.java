@@ -6,10 +6,10 @@ import com.crm.springbootjwtimplementation.domain.CartStatus;
 import com.crm.springbootjwtimplementation.domain.ProductVariant;
 import com.crm.springbootjwtimplementation.domain.ProductVariantImage;
 import com.crm.springbootjwtimplementation.domain.User;
-import com.crm.springbootjwtimplementation.domain.dto.CartDTO;
-import com.crm.springbootjwtimplementation.domain.dto.CartItemDTO;
-import com.crm.springbootjwtimplementation.domain.dto.product.ProductVariantDTO;
-import com.crm.springbootjwtimplementation.domain.dto.product.ProductVariantImageDTO;
+import com.crm.springbootjwtimplementation.dto.CartDTO;
+import com.crm.springbootjwtimplementation.dto.CartItemDTO;
+import com.crm.springbootjwtimplementation.dto.product.ProductVariantDTO;
+import com.crm.springbootjwtimplementation.dto.product.ProductVariantImageDTO;
 import com.crm.springbootjwtimplementation.repository.CartItemRepository;
 import com.crm.springbootjwtimplementation.repository.CartRepository;
 import com.crm.springbootjwtimplementation.repository.ProductRepository;
@@ -131,6 +131,7 @@ private ProductVariantDTO mapToProductVariantDTO(ProductVariant variant) {
     dto.setImageUrls(images);
     return dto;
 }
+
 
     // Changed parameter name from productId to variantId.
     @Override

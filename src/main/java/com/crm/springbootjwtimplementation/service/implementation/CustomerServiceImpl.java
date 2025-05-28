@@ -1,6 +1,6 @@
 package com.crm.springbootjwtimplementation.service.implementation;
 
-import com.crm.springbootjwtimplementation.domain.dto.CustomerDTO;
+import com.crm.springbootjwtimplementation.dto.CustomerDTO;
 import com.crm.springbootjwtimplementation.exceptions.security.CustomSecurityException;
 import com.crm.springbootjwtimplementation.mapper.CustomerMapper;
 import com.crm.springbootjwtimplementation.repository.CustomerRepository;
